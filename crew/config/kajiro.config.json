@@ -1,0 +1,11 @@
+{
+  "_comment": "PRD v5 Section 6, 'Kajiro optimized crew prompts': Auto mode is silent everywhere, no scorecard surfaced. Rubric weights held here so behavior is a data change, not a code change.",
+  "mode": "Auto",
+  "surfaceScorecard": false,
+  "rubric": {
+    "Kindle": 4,
+    "Architect": 3,
+    "Judge": 3,
+    "Instruct": 4
+  }
+}

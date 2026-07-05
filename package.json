@@ -1,0 +1,13 @@
+{
+  "name": "atrium",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Atrium (code ATR) — the AltoLumo solo operator sales console. Runs inbound and outbound lead generation over an AI sales crew inside Claude Code.",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev:web": "pnpm --filter @atrium/web dev",
+    "dev:console": "pnpm --filter @atrium/console dev",
+    "lint": "pnpm --filter @atrium/web lint && pnpm --filter @atrium/console lint",
+    "build": "pnpm --filter @atrium/web build && pnpm --filter @atrium/console build"
+  }
+}

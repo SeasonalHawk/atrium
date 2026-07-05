@@ -1,0 +1,6 @@
+{
+  "_comment": "PRD v5 Section 15, open question 3 default: small and mid-market organizations pursuing AI implementation with a disclosed budget at or above the $10k band. Edited via console/app/icp once Phase 2 ships.",
+  "orgSize": ["small", "mid-market"],
+  "minBudgetBand": "10k-50k",
+  "focus": "ai-implementation"
+}

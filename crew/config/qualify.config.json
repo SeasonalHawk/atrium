@@ -1,0 +1,21 @@
+{
+  "_comment": "PRD v5 Section 7: the single source for the five category weights, never hardcoded in agent logic. Must always sum to 1.0.",
+  "weights": {
+    "companyFit": 0.25,
+    "contactAccess": 0.20,
+    "opportunityQuality": 0.20,
+    "competitivePosition": 0.15,
+    "outreachReadiness": 0.20
+  },
+  "gradeBands": {
+    "A+": [90, 100],
+    "A": [75, 89],
+    "B": [60, 74],
+    "C": [40, 59],
+    "D": [0, 39]
+  },
+  "bant": {
+    "dimensions": ["budget", "authority", "need", "timeline"],
+    "maxPerDimension": 25
+  }
+}
