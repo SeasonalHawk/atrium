@@ -30,6 +30,10 @@ crew/workspace/
 .DS_Store
 *.swp
 
+# Local Claude Code session state (permissions, scheduled-task locks --
+# machine/session-specific, not project source)
+.claude/
+
 # Logs
 *.log
 npm-debug.log*

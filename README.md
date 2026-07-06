@@ -110,13 +110,15 @@ and verified end-to-end — `/atrium prospect` and `/atrium qualify` both
 produce real composite scores from `crew/config/qualify.config.json`'s
 weights against real companies.
 
-**Phase 2 (Lead Engine + Shared Pipeline): in progress.** `engine/` sources,
-enriches, and verifies leads behind swappable provider interfaces (Google
-Places, Serper, Hunter, ZeroBounce), with 44 passing unit tests. Scoring,
-the admission gate, Supabase persistence, and the console board are next.
+**Phase 2 (Lead Engine + Shared Pipeline): in progress.** `engine/` runs the
+full six-stage pipeline — source, enrich, verify, dedup, score, admit —
+behind swappable provider interfaces (Google Places, Serper, Hunter,
+ZeroBounce), with 70 passing unit tests. `supabase/schema.sql` defines the
+shared tables, and `crew/scripts/push_status.mjs`/`fetch_leads.mjs` bridge
+the crew to Supabase for real (15 more tests). The console board is next.
 
 `docs/Atrium-System-PRD-v8.docx` consolidates and supersedes v5, adding the
 Lead Engine, an MCP automation layer, a review-before-send queue, and
 configurable multi-profile ICP targeting. See [`ROADMAP.md`](ROADMAP.md)
-for the current five-phase, sprint-by-sprint build plan (3 of 14 sprints
+for the current five-phase, sprint-by-sprint build plan (4 of 14 sprints
 done).

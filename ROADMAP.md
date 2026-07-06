@@ -127,11 +127,26 @@ security bug while adapting `analyze_prospect.py` in Sprint 2 — same
 adapt-with-scrutiny discipline applied here; no equivalent issue found in
 the new engine code.
 
-### Sprint 4 — Scoring, admission, persistence (9 CC hrs)
+### Sprint 4 — Scoring, admission, persistence (9 CC hrs) ✅ Done
 
 - Build first-pass scoring, the admission gate, and dedup (3 hrs).
 - Integrate Supabase — leads, targets, runs tables (3 hrs).
 - Database bridge scripts between crew and Supabase (3 hrs).
+
+**Verified:** `engine/src/scoring/scorer.py` (first-pass fit score, 0-100),
+`decision_gate.py` (admission: risky/invalid emails always held, not-found
+admitted if the score clears the profile's threshold), and
+`dedup/reconciler.py` (merges duplicates by domain/name, unions signals,
+keeps the richer contact) — 26 new pytest tests, 70 total in `engine/`.
+`supabase/schema.sql` defines `leads`, `lead_signals`, `artifacts`, `runs`,
+`icp_profiles`, `campaigns`. `engine/src/output/supabase_writer.py` upserts
+admitted leads on `dedupeKey`. `crew/scripts/push_status.mjs` and
+`fetch_leads.mjs` are real now (Supabase REST via `fetch`, PRD Section 10
+condition 3's fallback-to-workspace-on-failure behavior included) — 15
+Node test-runner tests. Ran the full six-stage pipeline end-to-end via
+`engine/main.py --sources list-import`: 2 real candidates in, 1 correctly
+admitted (had a contact), 1 correctly held (didn't) — the admission gate
+making a real decision on real data, not a mocked one.
 
 ### Sprint 5 — Console, deliverability, profiles (12 CC hrs)
 

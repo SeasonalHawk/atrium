@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
 Lead Engine — Atrium addition (adapted concept from 28AXE/lead-engine,
-PRD v8 Section 9). Sprint 3 scope: sourcing -> enrichment -> verification.
-Scoring, the admission gate, dedup, and Supabase/workspace output land in
-Sprint 4 -- this entry point deliberately stops short of them.
+PRD v8 Section 9). Six-stage pipeline: sourcing -> enrichment ->
+verification -> dedup -> scoring/admission -> output. As of Sprint 4, every
+stage runs; only --write-supabase actually persists (opt-in, since most
+development still runs without a live Supabase project).
 
 Usage:
     python3 engine/main.py --profile embedded-executive --limit 10
     python3 engine/main.py --profile embedded-executive --sources list-import
+    python3 engine/main.py --profile embedded-executive --sources list-import --write-supabase
 """
 
 import argparse
@@ -19,7 +21,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from src.core.base import ConfigurationError
 from src.core.config_loader import get_icp_profile, is_enabled, load_sources_config
+from src.dedup.reconciler import dedupe
 from src.enrichment.contact_finder import ContactFinderEnrichment
+from src.output.supabase_writer import SupabaseWriter
+from src.scoring import decision_gate, scorer
 from src.sourcing.google_places import GooglePlacesSource
 from src.sourcing.list_import import ListImportSource
 from src.sourcing.serp import SerpSource
@@ -50,6 +55,7 @@ def run(profile_id: str, limit: int, only_sources: list = None):
     profile = get_icp_profile(profile_id)
     config = load_sources_config()
 
+    # Stage 1: sourcing
     candidates = []
     for provider in build_sourcing_providers(config, only_sources):
         try:
@@ -59,6 +65,7 @@ def run(profile_id: str, limit: int, only_sources: list = None):
         except Exception as exc:
             print(f"{provider.name}: sourcing failed - {exc}", file=sys.stderr)
 
+    # Stage 2: enrichment
     if is_enabled("enrichment", "contact-finder", config):
         try:
             enricher = ContactFinderEnrichment()
@@ -66,6 +73,7 @@ def run(profile_id: str, limit: int, only_sources: list = None):
         except ConfigurationError as exc:
             print(f"Skipping contact-finder enrichment: {exc}", file=sys.stderr)
 
+    # Stage 3: verification
     if is_enabled("verification", "email-verifier", config):
         try:
             verifier = EmailVerifier()
@@ -76,18 +84,44 @@ def run(profile_id: str, limit: int, only_sources: list = None):
         except ConfigurationError as exc:
             print(f"Skipping email verification: {exc}", file=sys.stderr)
 
+    # Stage 4: dedup
+    before = len(candidates)
+    candidates = dedupe(candidates)
+    if before != len(candidates):
+        print(f"dedup: merged {before} candidate(s) into {len(candidates)}", file=sys.stderr)
+
+    # Stage 5: scoring + admission gate
+    candidates = [scorer.apply(c) for c in candidates]
+    candidates = [decision_gate.apply(c, profile) for c in candidates]
+    admitted_count = sum(1 for c in candidates if c.admitted)
+    print(f"admission gate: {admitted_count} of {len(candidates)} admitted", file=sys.stderr)
+
     return candidates
 
 
+def write_output(candidates, write_supabase: bool):
+    if not write_supabase:
+        return
+    admitted = [c for c in candidates if c.admitted]
+    try:
+        writer = SupabaseWriter()
+        result = writer.write_leads(admitted)
+        print(f"Supabase: wrote {len(result)} admitted lead(s)", file=sys.stderr)
+    except ConfigurationError as exc:
+        print(f"Skipping Supabase write: {exc}", file=sys.stderr)
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Lead Engine — sourcing, enrichment, verification (Sprint 3 scope).")
+    parser = argparse.ArgumentParser(description="Lead Engine — sourcing through admission gate (Sprint 4 scope).")
     parser.add_argument("--profile", required=True, help="ICP profile id from crew/config/icp.config.json")
     parser.add_argument("--limit", type=int, default=20, help="Max candidates per source (default: 20)")
     parser.add_argument("--sources", help="Comma-separated source names to run (default: all enabled)")
+    parser.add_argument("--write-supabase", action="store_true", help="Upsert admitted leads into Supabase (requires SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY)")
     args = parser.parse_args()
 
     only = args.sources.split(",") if args.sources else None
     candidates = run(args.profile, args.limit, only)
+    write_output(candidates, args.write_supabase)
 
     print(json.dumps([c.__dict__ for c in candidates], indent=2, ensure_ascii=False))
 
