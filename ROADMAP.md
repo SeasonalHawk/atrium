@@ -193,11 +193,33 @@ queue.
 
 **Claude Code hours: 27 · Solo dev hours: 78**
 
-### Sprint 6 — Signals and crew depth (12 CC hrs)
+### Sprint 6 — Signals and crew depth (12 CC hrs) ✅ Done
 
 - Meta Ad Library, Google Ads Transparency, hiring signals (6 hrs).
 - Fold signals into scoring with configurable weights (2 hrs).
 - Crew outreach, follow-up, prep, proposal skills (4 hrs).
+
+**Verified:** added a new pipeline stage — `SignalProvider` (`engine/src/core/base.py`)
+— running between enrichment and verification, matching the order
+`models.py`'s own docstring already named ("sourced → enriched → signaled →
+verified → scored → admitted"). Three real implementations:
+`hiring_signals.py` and `google_ads_transparency.py` (both Serper.dev
+searches — job-posting-marker domains for hiring, indexed Ads Transparency
+Center pages for Google Ads — since neither has a stable public jobs/ads-
+transparency API), and `meta_ad_library.py` (Meta's real, documented Ad
+Library Graph API, `META_AD_LIBRARY_ACCESS_TOKEN`). `engine/config/signals.yaml`
+gives each signal tag a configurable weight and a `max_total` ceiling;
+`scoring/scorer.py`'s `signal_score()` reads it when passed, and falls back
+to the pre-Sprint-6 flat per-signal weight when not (verified: old
+`test_scorer.py` tests still pass unchanged). `engine/main.py` wires the new
+stage in behind `engine/config/signals.yaml`'s per-provider enable flags,
+same graceful-skip-on-missing-key pattern as every other stage — confirmed
+by running `engine/main.py --profile embedded-executive --sources
+list-import` end-to-end with no signal API keys set. 20 new pytest tests
+(90 total in `engine/`). The crew's outreach/follow-up/prep/proposal skills
+were already real, substantial content (not stubs) from Sprint 1's
+mechanical adaptation — verified via `grep -c TODO` returning 0 across all
+four `SKILL.md` files, so no rework was needed there.
 
 ### Sprint 7 — The review queue and MCP servers (9 CC hrs)
 

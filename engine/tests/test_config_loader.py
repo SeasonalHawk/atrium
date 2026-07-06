@@ -8,6 +8,7 @@ from src.core.config_loader import (
     get_icp_profile,
     is_enabled,
     load_icp_profiles,
+    load_signals_config,
     load_sources_config,
     require_env,
 )
@@ -91,3 +92,37 @@ def test_require_env_missing_raises(monkeypatch):
     monkeypatch.delenv("SOME_MISSING_VAR", raising=False)
     with pytest.raises(ConfigurationError):
         require_env("SOME_MISSING_VAR")
+
+
+@pytest.fixture
+def signals_config_path(tmp_path):
+    path = tmp_path / "signals.yaml"
+    path.write_text(
+        textwrap.dedent(
+            """
+            weights:
+              active-hiring: 10
+              active-advertising: 8
+            max_total: 20
+
+            providers:
+              hiring:
+                enabled: true
+              meta-ad-library:
+                enabled: false
+            """
+        )
+    )
+    return path
+
+
+def test_load_signals_config(signals_config_path):
+    config = load_signals_config(signals_config_path)
+    assert config["weights"]["active-hiring"] == 10
+    assert config["max_total"] == 20
+
+
+def test_load_signals_config_providers_use_is_enabled(signals_config_path):
+    config = load_signals_config(signals_config_path)
+    assert is_enabled("providers", "hiring", config) is True
+    assert is_enabled("providers", "meta-ad-library", config) is False

@@ -20,6 +20,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[3]
 ICP_CONFIG_PATH = REPO_ROOT / "crew" / "config" / "icp.config.json"
 SOURCES_CONFIG_PATH = REPO_ROOT / "engine" / "config" / "sources.yaml"
+SIGNALS_CONFIG_PATH = REPO_ROOT / "engine" / "config" / "signals.yaml"
 
 
 def load_icp_profiles(path: Path = ICP_CONFIG_PATH) -> list:
@@ -49,6 +50,13 @@ def is_enabled(stage: str, provider: str, config: dict = None) -> bool:
     (stage is one of "sourcing", "enrichment", "verification")."""
     config = config if config is not None else load_sources_config()
     return bool(config.get(stage, {}).get(provider, {}).get("enabled", False))
+
+
+def load_signals_config(path: Path = SIGNALS_CONFIG_PATH) -> dict:
+    """Return the parsed engine/config/signals.yaml as a dict: per-signal-tag
+    scoring weights, a max_total ceiling, and per-provider enable flags."""
+    with open(path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
 
 
 def require_env(var_name: str) -> str:

@@ -1,0 +1,21 @@
+# Sprint 6, "Fold signals into scoring with configurable weights"
+# (ROADMAP.md). Each signal tag a SignalProvider can return, its scoring
+# weight, and the ceiling on how much all signals together can contribute
+# to fit_score (engine/src/scoring/scorer.py). Never hardcode these in the
+# scorer -- retune here as real admit-rate data comes in (Phase 3).
+weights:
+  active-hiring: 10
+  active-advertising: 8
+  google-ads-active: 8
+max_total: 20
+
+providers:
+  hiring:
+    enabled: true
+    rate_limit_per_minute: 20
+  meta-ad-library:
+    enabled: true
+    rate_limit_per_minute: 20
+  google-ads-transparency:
+    enabled: true
+    rate_limit_per_minute: 20

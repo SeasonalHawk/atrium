@@ -44,6 +44,22 @@ class VerificationProvider(ABC):
         raise NotImplementedError
 
 
+class SignalProvider(ABC):
+    """Detects buying-intent signals for a candidate (Sprint 6: Meta Ad
+    Library, Google Ads Transparency, hiring). Runs between enrichment and
+    verification -- models.py's own pipeline docstring already names this
+    stage "signaled"."""
+
+    name: str = "unnamed-signal"
+
+    @abstractmethod
+    def collect(self, candidate: Candidate) -> List[str]:
+        """Return signal tags to append to candidate.signals (e.g.
+        "active-hiring"). Return an empty list when nothing is found --
+        never fabricate a signal."""
+        raise NotImplementedError
+
+
 class ConfigurationError(RuntimeError):
     """Raised when a provider is used without its required configuration
     (e.g. a missing API key). Never silently falls back to fabricated data --
