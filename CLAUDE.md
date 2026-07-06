@@ -15,9 +15,10 @@ lines use "Copyright © 2026 Kenneth Benavides. All rights reserved."
 
 Current stage: Phase 1 (Local MVP Crew) complete. Phase 2 (Lead Engine +
 Shared Pipeline) complete. Phase 3 (Autopilot, Signals, Review-Before-Send)
-complete, 8 of 14 sprints done overall — `engine/` runs the full
-seven-stage pipeline (source → enrich → signal → verify → dedup → score →
-admit), `supabase/schema.sql` defines the shared tables,
+complete. Phase 4 (Full Integration and Inbound) in progress, 9 of 14
+sprints done overall — `engine/` runs the full seven-stage pipeline
+(source → enrich → signal → verify → dedup → score → admit),
+`supabase/schema.sql` defines the shared tables,
 `crew/scripts/push_status.mjs`/`fetch_leads.mjs` bridge the crew to
 Supabase for real, and the console has a real pipeline board, lead detail
 view, deliverability checker, ICP profile switcher, and review-before-send
@@ -30,12 +31,18 @@ configurable per-signal weights (`engine/config/signals.yaml`).
 tools (PRD v8's MCP automation layer), and `engine/scheduled_run.py` runs
 the full pipeline across every ICP profile on a GitHub Actions cron
 schedule (`.github/workflows/scheduled-run.yml`), posting a webhook
-notification for hot leads via `engine/src/notify/hot_lead.py`. 107
-pytest tests (`engine/`) + 7 pytest tests (`crew/scripts/test_log_run.py`)
-+ 5 pytest tests (`crew/mcp/test_atrium_engine_server.py`) + 15 Node
-test-runner tests (`crew/scripts/*.test.mjs`) + 23 vitest tests
-(`console/lib/*.test.ts`), all external calls mocked. Source of truth for
-product decisions:
+notification for hot leads via `engine/src/notify/hot_lead.py`. The
+inbound funnel (`web/app/funnel`) is real: a four-step elicitation
+wizard, real Tailwind wiring with the AltoLumo Brand Book v8 palette
+(never actually wired in before Sprint 9, despite being a listed
+dependency since Sprint 1), Cal.com booking, and Resend confirmation +
+operator alert. 107 pytest tests (`engine/`) + 7 pytest tests
+(`crew/scripts/test_log_run.py`) + 5 pytest tests
+(`crew/mcp/test_atrium_engine_server.py`) + 15 Node test-runner tests
+(`crew/scripts/*.test.mjs`) + 23 vitest tests (`console/lib/*.test.ts`)
++ 29 vitest tests (`web/lib/*.test.ts`) + 11 vitest tests
+(`packages/shared/src/*.test.ts`), all external calls mocked. Source of
+truth for product decisions:
 `docs/Atrium-System-PRD-v8.docx` — v8 consolidates and supersedes v5,
 adding the Lead Engine, MCP automation layer, review-before-send queue, and
 multi-profile ICP targeting. Source of truth for sequencing: `ROADMAP.md`
@@ -67,7 +74,15 @@ conversation's own process.
   Tailwind CSS 3. pnpm workspaces (`web`, `console`, `launcher`,
   `packages/shared`).
 - `pnpm install` — install JS workspace deps.
-- `pnpm dev:web` — run the inbound funnel locally.
+- `pnpm dev:web` — run the inbound funnel locally. Tailwind is wired for
+  real as of Sprint 9 (`web/tailwind.config.ts`, `web/postcss.config.mjs`,
+  `web/app/globals.css`) — brand tokens (paper/ink/steel/deep-steel/etc.)
+  come from `docs/mockup/atrium-v8-model.html`, the verified source.
+- `pnpm --filter @atrium/web exec vitest run` — web unit tests (29 as of
+  Sprint 9: `leadIntake.ts`, `calcom.ts`, `resend.ts`, `booking.ts`,
+  `funnelStore.ts`, `suggestedSlots.ts`), all HTTP/email calls mocked.
+- `pnpm --filter @atrium/shared exec vitest run` — shared package unit
+  tests (11 as of Sprint 9: `elicitation.ts`'s step-management helpers).
 - `pnpm dev:console` — run the operator console locally (port 4000).
 - `pnpm lint` / `pnpm build` — across both apps; matches `.github/workflows/ci.yml`.
 - `node launcher/server.mjs` — start the local launcher (or `pnpm --filter @atrium/launcher start`).
