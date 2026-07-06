@@ -101,9 +101,12 @@ for the complete product specification.
 
 ## Status
 
-Inception. Repository scaffolded per PRD v5's Section 7 project structure.
-`docs/Atrium-System-PRD-v8.docx` consolidates and supersedes v5, adding a
-Lead Engine, an MCP automation layer, a review-before-send queue, and
-configurable multi-profile ICP targeting. See
-[`ROADMAP.md`](ROADMAP.md) for the current five-phase, sprint-by-sprint
-build plan. Phase 1 (Local MVP Crew) build has not started.
+Phase 1 (Local MVP Crew), Sprint 1 of 14 complete on `dev`: the orchestrator,
+13 sub-skills, and 5 agents are adapted from the reference crew (real
+content, not stubs) and verified end-to-end — a live `/atrium prospect` run
+against a real company produced a composite score computed from
+`crew/config/qualify.config.json`'s weights. `docs/Atrium-System-PRD-v8.docx`
+consolidates and supersedes v5, adding a Lead Engine, an MCP automation
+layer, a review-before-send queue, and configurable multi-profile ICP
+targeting. See [`ROADMAP.md`](ROADMAP.md) for the current five-phase,
+sprint-by-sprint build plan.

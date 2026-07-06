@@ -13,8 +13,13 @@ land in one pipeline worked by the same crew inside Claude Code.
 Owner: Kenneth Benavides, personally. Not an Irongrove project — copyright
 lines use "Copyright © 2026 Kenneth Benavides. All rights reserved."
 
-Current stage: inception, scaffolded, entering Phase 1 (see PRD v5 Section 11).
-Source of truth for product decisions: `docs/Atrium-PRD-v5.docx`.
+Current stage: Phase 1 (Local MVP Crew), Sprint 1 of 14 complete (crew
+installed and adapted from the reference repo, verified end-to-end against
+a real company). Source of truth for product decisions:
+`docs/Atrium-System-PRD-v8.docx` — v8 consolidates and supersedes v5,
+adding the Lead Engine, MCP automation layer, review-before-send queue, and
+multi-profile ICP targeting. Source of truth for sequencing: `ROADMAP.md`
+(14 sprints across PRD v8's 5 phases).
 
 ## Role
 
@@ -46,9 +51,13 @@ conversation's own process.
 - `pnpm lint` / `pnpm build` — across both apps; matches `.github/workflows/ci.yml`.
 - `node launcher/server.mjs` — start the local launcher (or `pnpm --filter @atrium/launcher start`).
 - `pip install -r crew/requirements.txt` — crew Python deps (reportlab, beautifulsoup4, requests).
-- Crew commands run inside Claude Code as `/atrium <command>` once installed
-  under the Claude configuration directory per the reference `install.sh`
-  convention (PRD v5 Section 7).
+- `bash crew/install.sh` — installs the orchestrator, 14 sub-skills, 5 agents,
+  4 scripts, 6 templates, and config into `~/.claude/skills` and
+  `~/.claude/agents` from this repo's `crew/` directory (no GitHub clone
+  step — the source is always local). `crew/uninstall.sh` reverses it.
+- Crew commands run inside Claude Code as `/atrium <command>` once installed.
+  The orchestrator and all 5 agents are real, adapted content (not stubs) as
+  of Sprint 1 — see `crew/atrium/SKILL.md`.
 
 Key directories: `web/` (public funnel, Vercel), `console/` (operator
 console, local), `launcher/` (Node helper bridging console to Claude Code),
@@ -57,19 +66,30 @@ to the Claude config dir, not run from here directly).
 
 ## Git
 
-GitHub account: SeasonalHawk. Repo: `atrium`. Branches: `main` (production),
-`dev` (integration), `feat/*` off `dev`. Never commit directly to `main`.
-Conventional commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`).
+GitHub account: SeasonalHawk. Repo: `atrium`. pnpm only — never `npm` or
+`yarn`, never commit `package-lock.json` or `yarn.lock`.
+
+Branches: `main` (production), `dev` (integration), `feature/*` / `fix/*` /
+`mvp/*` off `dev` (never off `main`). PRs merge to `dev`. Never commit
+directly to `main`. When `dev` is stable (a phase's Definition of Done is
+met, not just any merged PR), merge `dev` → `main` and tag the release
+`vX.Y.Z` with `git tag -a`. Conventional commits (`feat:`, `fix:`, `chore:`,
+`docs:`, `refactor:`, `test:`), format `type(scope): description`.
 
 ## Custom Project Rules
 
 - **Reference-crew fidelity.** Atrium adopts
-  `github.com/zubair-trabzada/ai-sales-team-claude` directly — the 14
+  `github.com/zubair-trabzada/ai-sales-team-claude` directly (the crew) and
+  `github.com/28AXE/lead-engine` (the Lead Engine, Phase 2+) — the 14
   commands, 5 agents and their weights, the 4 script CLI contracts, and the
   6 templates. Never diverge from a verified reference contract without
-  first updating the PRD; if the reference repo changes, re-verify against
-  a fresh clone before changing this codebase, per the PRD's own verification
-  discipline (PRD v5 revision note).
+  first updating the PRD; if a reference repo changes, re-verify against a
+  fresh clone before changing this codebase, per the PRD's own verification
+  discipline (PRD v8 consolidation note). When adapting reference content,
+  rename only product-specific identifiers (`sales-*` → `atrium-*`, `/sales`
+  → `/atrium`) — never blanket-replace the word "sales," which appears
+  throughout the reference prose as ordinary business vocabulary ("VP
+  Sales," "sales cycle") that must survive the adaptation untouched.
 - **Weights live only in config.** The five category weights
   (`companyFit` 0.25, `contactAccess` 0.20, `opportunityQuality` 0.20,
   `competitivePosition` 0.15, `outreachReadiness` 0.20) exist solely in
@@ -86,7 +106,7 @@ Conventional commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`).
   firmographics) records a claim, a source, and a Strong/Moderate/Weak/Absent
   strength. If public data can't substantiate a claim, the agent lowers
   confidence and records what could not be found — it never invents a
-  signal (PRD v5 Section 10, condition 6).
+  signal (PRD v8 Section 12, "thin public data lowers the fit score").
 
 ## Do Not
 
