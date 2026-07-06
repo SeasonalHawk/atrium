@@ -2,6 +2,8 @@
 // build configuration. Placeholder until Phase 1 "Scaffold funnel and
 // console apps" adds real config.
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  transpilePackages: ["@atrium/shared"],
+};
 
 export default nextConfig;
