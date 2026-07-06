@@ -48,18 +48,26 @@ describe("reserveSlot", () => {
     expect(body.attendee).toEqual({ name: "Jane", email: "jane@acme.example", timeZone: "UTC" });
   });
 
-  it("throws a clear error when Cal.com returns a non-2xx response", async () => {
+  it("throws a generic, safe error when Cal.com returns a non-2xx response", async () => {
+    // The raw status/body (which may echo internal Cal.com error details)
+    // must never reach the caller -- only a safe, generic message.
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: false,
       status: 409,
       text: async () => "slot no longer available",
     });
 
-    await expect(
+    const rejection = expect(
       reserveSlot(
         { slotStart: "2026-08-01T10:00:00Z", attendeeName: "Jane", attendeeEmail: "jane@acme.example" },
         fetchImpl,
       ),
-    ).rejects.toThrow(/409/);
+    ).rejects;
+    await rejection.toThrow(/choose another time/);
+    await rejection.not.toThrow(/409/);
+
+    expect(consoleError).toHaveBeenCalledWith(expect.stringContaining("409"));
+    consoleError.mockRestore();
   });
 });

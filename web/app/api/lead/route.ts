@@ -31,7 +31,9 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ id: data?.id });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Unknown error creating the lead";
-    return NextResponse.json({ error: message }, { status: 500 });
+    // The real cause (e.g. a Supabase connection/config error) is logged
+    // server-side only -- never echoed back to the caller.
+    console.error(`Failed to create lead: ${e instanceof Error ? e.message : e}`);
+    return NextResponse.json({ error: "Unable to submit your information. Please try again." }, { status: 500 });
   }
 }

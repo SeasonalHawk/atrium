@@ -85,7 +85,6 @@ export default function FunnelPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           leadId,
-          company: payload.company,
           attendeeName: attendeeName.trim(),
           attendeeEmail: attendeeEmail.trim(),
           slotStart: selectedSlot,
