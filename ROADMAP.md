@@ -60,7 +60,7 @@ building anything that finds new ones.
 
 **Claude Code hours: 22 · Solo dev hours: 64**
 
-### Sprint 1 — Install and wire the crew (13 CC hrs)
+### Sprint 1 — Install and wire the crew (13 CC hrs) ✅ Done
 
 - Install and adapt the crew from the reference repo (4 hrs).
 - Author the `/atrium` orchestrator and command routing (3 hrs).
@@ -71,8 +71,9 @@ building anything that finds new ones.
 
 **Demo at end of week:** `/atrium prospect` routes through all five agents
 and returns *something*, even if the scoring still needs Sprint 2's tuning.
+**Verified:** ran end-to-end against resend.com — composite 64/100, Grade B.
 
-### Sprint 2 — Score real leads, preload profiles (9 CC hrs)
+### Sprint 2 — Score real leads, preload profiles (9 CC hrs) ✅ Done
 
 - Wire `lead_scorer.py` and `analyze_prospect.py` for real (2 hrs).
 - Simple CSV import of a warm or conference list (2 hrs).
@@ -89,6 +90,12 @@ BANT + MEDDIC qualification with evidence, and drafted outreach — all
 locally, review-before-send already the default posture. The five category
 weights come from config and sum to one. Kajiro optimizes silently. Cost is
 the Claude subscription only.
+
+**Phase 1 Definition of Done: met.** Verified `/atrium qualify` end-to-end
+against linear.app — Opportunity Quality Score 59/100, Grade B, computed
+from the qualify skill's own BANT*0.5 + MEDDIC*0.3 + Urgency*0.2 formula.
+Preloaded 5 ICP profiles (PRD's 4 + Project & Program Leadership). Cost
+logging verified via `crew/scripts/log_run.py --summary`.
 
 ---
 

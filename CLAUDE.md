@@ -13,9 +13,11 @@ land in one pipeline worked by the same crew inside Claude Code.
 Owner: Kenneth Benavides, personally. Not an Irongrove project — copyright
 lines use "Copyright © 2026 Kenneth Benavides. All rights reserved."
 
-Current stage: Phase 1 (Local MVP Crew), Sprint 1 of 14 complete (crew
-installed and adapted from the reference repo, verified end-to-end against
-a real company). Source of truth for product decisions:
+Current stage: Phase 1 (Local MVP Crew) complete, 2 of 14 sprints done —
+the crew is installed, adapted, and verified end-to-end (`/atrium prospect`
+and `/atrium qualify` both produce real scores from real config weights).
+Phase 2 (Lead Engine + Shared Pipeline) is in progress. Source of truth for
+product decisions:
 `docs/Atrium-System-PRD-v8.docx` — v8 consolidates and supersedes v5,
 adding the Lead Engine, MCP automation layer, review-before-send queue, and
 multi-profile ICP targeting. Source of truth for sequencing: `ROADMAP.md`
