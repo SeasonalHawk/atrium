@@ -1,0 +1,4 @@
+# Atrium MCP servers (ROADMAP.md Sprint 7) — separate from crew/requirements.txt
+# (reportlab/bs4/requests, for scripts run directly) and engine/requirements.txt
+# (the Lead Engine's own deps, reused here via sys.path).
+mcp>=1.0.0
