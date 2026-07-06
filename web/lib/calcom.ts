@@ -58,8 +58,12 @@ export async function reserveSlot(
   });
 
   if (!response.ok) {
+    // Log the full response server-side only -- it may echo back request
+    // details or internal Cal.com error text that shouldn't reach the
+    // visitor (information disclosure). Callers get a generic, safe message.
     const body = await response.text().catch(() => "");
-    throw new Error(`Cal.com booking failed: ${response.status} ${body}`);
+    console.error(`Cal.com booking failed: ${response.status} ${body}`);
+    throw new Error("That slot could not be booked -- please choose another time.");
   }
 
   const data = await response.json();
