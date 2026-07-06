@@ -6,8 +6,8 @@ Adapted in concept from `github.com/28AXE/lead-engine` per PRD v8 Section 9
 — swappable stages behind a common interface, driven by config, never
 hardcoded.
 
-**As of Sprint 4, `engine/main.py` runs the full six-stage pipeline**:
-source → enrich → verify → dedup → score → admit, with an opt-in
+**As of Sprint 6, `engine/main.py` runs the full seven-stage pipeline**:
+source → enrich → signal → verify → dedup → score → admit, with an opt-in
 `--write-supabase` flag to persist admitted leads.
 
 ## Stages
@@ -16,9 +16,10 @@ source → enrich → verify → dedup → score → admit, with an opt-in
 |---|---|---|
 | Sourcing | `SourcingProvider.discover(icp_profile, limit)` | `google_places.py`, `serp.py`, `list_import.py`, `claude_web.py` (disabled by default — see its docstring) |
 | Enrichment | `EnrichmentProvider.enrich(candidate)` | `contact_finder.py` (Hunter.io) |
+| Signals | `SignalProvider.collect(candidate)` | `hiring_signals.py` (Serper.dev job-posting search), `meta_ad_library.py` (Meta Ad Library Graph API), `google_ads_transparency.py` (Serper.dev search of the Ads Transparency Center) |
 | Verification | `VerificationProvider.verify(email)` | `email_verifier.py` (ZeroBounce) |
 | Dedup | `dedup.reconciler.dedupe(candidates)` | Merges by domain/company name, unions signals, keeps the richer contact and higher fit score |
-| Scoring | `scoring.scorer.apply(candidate)` | First-pass 0-100 fit score from what's already known (contact found, email deliverable, URL present) |
+| Scoring | `scoring.scorer.apply(candidate, signals_config)` | First-pass 0-100 fit score: URL/contact/email as before, plus each signal tag weighted per `engine/config/signals.yaml` (falls back to a flat per-signal weight if no config is passed) |
 | Admission | `scoring.decision_gate.apply(candidate, icp_profile)` | Risky/invalid emails always held; not-found admitted only if the score clears the profile's `admissionThreshold` |
 | Output | `output.supabase_writer.SupabaseWriter` | Upserts admitted leads into Supabase on `dedupeKey` |
 
@@ -29,12 +30,18 @@ new file plus a `sources.yaml` entry, never a rewrite.
 
 - `crew/config/icp.config.json` — the ICP profiles (shared with the crew,
   never duplicated here).
-- `engine/config/sources.yaml` — which providers are enabled, rate limits.
+- `engine/config/sources.yaml` — which sourcing/enrichment/verification
+  providers are enabled, rate limits.
+- `engine/config/signals.yaml` — per-signal-tag scoring weights, the
+  `max_total` ceiling on their combined contribution to `fit_score`, and
+  which signal providers are enabled. Retune here as real admit-rate data
+  comes in — never hardcode a weight in `scorer.py`.
 - API keys are read directly from the environment by each provider
   (`GOOGLE_PLACES_API_KEY`, `SERPER_API_KEY`, `HUNTER_API_KEY`,
-  `ZEROBOUNCE_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — see
-  `.env.example`). A missing key raises a clear `ConfigurationError` — the
-  engine never fabricates a result when it can't reach a real source.
+  `ZEROBOUNCE_API_KEY`, `META_AD_LIBRARY_ACCESS_TOKEN`, `SUPABASE_URL`,
+  `SUPABASE_SERVICE_ROLE_KEY` — see `.env.example`). A missing key raises a
+  clear `ConfigurationError` — the engine never fabricates a result when it
+  can't reach a real source.
 - `supabase/schema.sql` (repo root) defines the tables `SupabaseWriter`
   writes into. No Supabase project is linked yet as of Sprint 4 — run the
   schema against your own project when you provision one.
@@ -68,7 +75,7 @@ python3 -m pytest engine/tests/ -v
 
 Every HTTP call and the one subprocess call (`claude_web.py`) is mocked in
 tests — no live API keys or network access required to run the suite, and
-no test spends real Claude Code usage. 70 tests as of Sprint 4.
+no test spends real Claude Code usage. 90 tests as of Sprint 6.
 
 The crew↔Supabase bridge scripts (`crew/scripts/push_status.mjs`,
 `fetch_leads.mjs`) have their own Node test-runner suite:

@@ -121,8 +121,14 @@ pipeline board, lead detail view, deliverability checker (SPF/DKIM/DMARC),
 and ICP profile switcher, all backed by a shared `packages/shared/`
 workspace package instead of a cross-app relative import.
 
+**Phase 3 (Autopilot, Signals, Review-Before-Send): in progress.** The
+Lead Engine now runs a seventh pipeline stage — signals — pulling hiring,
+Meta Ad Library, and Google Ads Transparency intent signals into the
+first-pass fit score with configurable per-signal weights
+(`engine/config/signals.yaml`), 90 passing unit tests.
+
 `docs/Atrium-System-PRD-v8.docx` consolidates and supersedes v5, adding the
 Lead Engine, an MCP automation layer, a review-before-send queue, and
 configurable multi-profile ICP targeting. See [`ROADMAP.md`](ROADMAP.md)
-for the current five-phase, sprint-by-sprint build plan (5 of 14 sprints
+for the current five-phase, sprint-by-sprint build plan (6 of 14 sprints
 done).

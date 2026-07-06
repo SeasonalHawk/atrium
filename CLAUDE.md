@@ -14,16 +14,19 @@ Owner: Kenneth Benavides, personally. Not an Irongrove project — copyright
 lines use "Copyright © 2026 Kenneth Benavides. All rights reserved."
 
 Current stage: Phase 1 (Local MVP Crew) complete. Phase 2 (Lead Engine +
-Shared Pipeline) complete, 5 of 14 sprints done overall — `engine/` runs
-the full six-stage pipeline (source → enrich → verify → dedup → score →
+Shared Pipeline) complete. Phase 3 (Autopilot, Signals, Review-Before-Send)
+in progress, 6 of 14 sprints done overall — `engine/` runs the full
+seven-stage pipeline (source → enrich → signal → verify → dedup → score →
 admit), `supabase/schema.sql` defines the shared tables,
 `crew/scripts/push_status.mjs`/`fetch_leads.mjs` bridge the crew to
 Supabase for real, and the console has a real pipeline board, lead detail
 view, deliverability checker, and ICP profile switcher, all sharing
 TypeScript code with the funnel through `packages/shared/` (a real pnpm
 workspace package, replacing a cross-app relative import flagged as a risk
-in Sprint 4). 70 pytest tests (`engine/`) + 7 pytest tests
-(`crew/scripts/test_log_run.py`) + 15 Node test-runner tests
+in Sprint 4). Signals (hiring, Meta Ad Library, Google Ads Transparency)
+fold into the fit score with configurable per-signal weights
+(`engine/config/signals.yaml`). 90 pytest tests (`engine/`) + 7 pytest
+tests (`crew/scripts/test_log_run.py`) + 15 Node test-runner tests
 (`crew/scripts/*.test.mjs`) + 17 vitest tests (`console/lib/*.test.ts`),
 all external calls mocked. Source of truth for product decisions:
 `docs/Atrium-System-PRD-v8.docx` — v8 consolidates and supersedes v5,
@@ -74,8 +77,8 @@ conversation's own process.
 - `python3 engine/main.py --profile <id> --sources list-import` — run the
   engine without needing any API key (list-import only). Drop `--sources`
   to run all enabled providers once their keys are in `.env.local`.
-- `python3 -m pytest engine/tests/ -v` — engine unit tests (70 as of Sprint
-  4), all HTTP/subprocess calls mocked, no live credentials needed.
+- `python3 -m pytest engine/tests/ -v` — engine unit tests (90 as of Sprint
+  6), all HTTP/subprocess calls mocked, no live credentials needed.
 - `node --test crew/scripts/*.test.mjs` — bridge script tests (15 as of
   Sprint 4: `push_status.mjs`, `fetch_leads.mjs`), Supabase calls mocked.
 - `python3 -m pytest crew/scripts/test_*.py -v` — crew Python script tests
