@@ -6,7 +6,7 @@ export interface ElicitationQuestion {
   key: string;
   question: string;
   type: "single_select";
-  options: string[];
+  options: readonly string[];
 }
 
 export type ElicitationPayload = Record<string, string>;
