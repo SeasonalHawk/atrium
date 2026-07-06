@@ -1,0 +1,24 @@
+# Lead Engine source configuration (PRD v8 Section 9). Which discovery,
+# enrichment, and verification providers are enabled, and how hard each one
+# is allowed to run. API keys are never here -- see .env.example.
+sourcing:
+  google-places:
+    enabled: true
+    rate_limit_per_minute: 30
+  serp:
+    enabled: true
+    rate_limit_per_minute: 20
+  claude-web:
+    enabled: false # Sprint 3 stub: requires a headless Claude Code invocation, see claude_web.py
+  list-import:
+    enabled: true
+
+enrichment:
+  contact-finder:
+    enabled: true
+    rate_limit_per_minute: 30
+
+verification:
+  email-verifier:
+    enabled: true
+    rate_limit_per_minute: 60

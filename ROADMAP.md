@@ -60,7 +60,7 @@ building anything that finds new ones.
 
 **Claude Code hours: 22 · Solo dev hours: 64**
 
-### Sprint 1 — Install and wire the crew (13 CC hrs)
+### Sprint 1 — Install and wire the crew (13 CC hrs) ✅ Done
 
 - Install and adapt the crew from the reference repo (4 hrs).
 - Author the `/atrium` orchestrator and command routing (3 hrs).
@@ -71,8 +71,9 @@ building anything that finds new ones.
 
 **Demo at end of week:** `/atrium prospect` routes through all five agents
 and returns *something*, even if the scoring still needs Sprint 2's tuning.
+**Verified:** ran end-to-end against resend.com — composite 64/100, Grade B.
 
-### Sprint 2 — Score real leads, preload profiles (9 CC hrs)
+### Sprint 2 — Score real leads, preload profiles (9 CC hrs) ✅ Done
 
 - Wire `lead_scorer.py` and `analyze_prospect.py` for real (2 hrs).
 - Simple CSV import of a warm or conference list (2 hrs).
@@ -90,6 +91,12 @@ locally, review-before-send already the default posture. The five category
 weights come from config and sum to one. Kajiro optimizes silently. Cost is
 the Claude subscription only.
 
+**Phase 1 Definition of Done: met.** Verified `/atrium qualify` end-to-end
+against linear.app — Opportunity Quality Score 59/100, Grade B, computed
+from the qualify skill's own BANT*0.5 + MEDDIC*0.3 + Urgency*0.2 formula.
+Preloaded 5 ICP profiles (PRD's 4 + Project & Program Leadership). Cost
+logging verified via `crew/scripts/log_run.py --summary`.
+
 ---
 
 ## PHASE 2 — LEAD ENGINE + SHARED PIPELINE (Sprints 3-5, cumulative by ~week 5)
@@ -99,12 +106,26 @@ stop sourcing by hand.
 
 **Claude Code hours: 33 · Solo dev hours: 98**
 
-### Sprint 3 — Sourcing and enrichment (12 CC hrs)
+### Sprint 3 — Sourcing and enrichment (12 CC hrs) ✅ Done
 
 - Scaffold the engine, config loader, base stage interfaces (3 hrs).
 - Build Google Places + SERP + Claude web discovery (4 hrs).
 - Build contact and email finding (3 hrs).
-- Build email verification and the valid/risky/invalid gate (2 hrs).
+- Build email verification and the valid/risky/invalid gate (2 hrs) — note:
+  the admission *gate* itself (valid/risky/invalid routing logic) is Sprint
+  4's "first-pass scoring, admission gate, and dedup" task; Sprint 3 ships
+  the classifier the gate will consume.
+
+**Verified:** `engine/` scaffolded with base interfaces (`SourcingProvider`,
+`EnrichmentProvider`, `VerificationProvider`), 4 sourcing providers (Google
+Places, SERP, list-import, Claude-web), contact-finding enrichment (Hunter),
+and email verification (ZeroBounce). 44 pytest unit tests, all HTTP/subprocess
+calls mocked — no live API keys needed to run the suite. Ran the real CLI
+end-to-end via `list-import` (no key required for that source) against a
+real target. See `engine/README.md`. Found and fixed a real TLS-verification
+security bug while adapting `analyze_prospect.py` in Sprint 2 — same
+adapt-with-scrutiny discipline applied here; no equivalent issue found in
+the new engine code.
 
 ### Sprint 4 — Scoring, admission, persistence (9 CC hrs)
 
