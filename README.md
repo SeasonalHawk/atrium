@@ -125,10 +125,14 @@ workspace package instead of a cross-app relative import.
 Lead Engine now runs a seventh pipeline stage — signals — pulling hiring,
 Meta Ad Library, and Google Ads Transparency intent signals into the
 first-pass fit score with configurable per-signal weights
-(`engine/config/signals.yaml`), 90 passing unit tests.
+(`engine/config/signals.yaml`). The console has a real review-before-send
+queue — approve, reject, or hold every crew-drafted lead before anything
+goes out — and `crew/mcp/` ships a real MCP server exposing the engine's
+places/contact/verification/signal providers as tools a Claude Code agent
+can call directly.
 
 `docs/Atrium-System-PRD-v8.docx` consolidates and supersedes v5, adding the
 Lead Engine, an MCP automation layer, a review-before-send queue, and
 configurable multi-profile ICP targeting. See [`ROADMAP.md`](ROADMAP.md)
-for the current five-phase, sprint-by-sprint build plan (6 of 14 sprints
+for the current five-phase, sprint-by-sprint build plan (7 of 14 sprints
 done).

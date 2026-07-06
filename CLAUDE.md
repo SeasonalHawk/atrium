@@ -15,19 +15,22 @@ lines use "Copyright © 2026 Kenneth Benavides. All rights reserved."
 
 Current stage: Phase 1 (Local MVP Crew) complete. Phase 2 (Lead Engine +
 Shared Pipeline) complete. Phase 3 (Autopilot, Signals, Review-Before-Send)
-in progress, 6 of 14 sprints done overall — `engine/` runs the full
+in progress, 7 of 14 sprints done overall — `engine/` runs the full
 seven-stage pipeline (source → enrich → signal → verify → dedup → score →
 admit), `supabase/schema.sql` defines the shared tables,
 `crew/scripts/push_status.mjs`/`fetch_leads.mjs` bridge the crew to
 Supabase for real, and the console has a real pipeline board, lead detail
-view, deliverability checker, and ICP profile switcher, all sharing
-TypeScript code with the funnel through `packages/shared/` (a real pnpm
-workspace package, replacing a cross-app relative import flagged as a risk
-in Sprint 4). Signals (hiring, Meta Ad Library, Google Ads Transparency)
-fold into the fit score with configurable per-signal weights
-(`engine/config/signals.yaml`). 90 pytest tests (`engine/`) + 7 pytest
-tests (`crew/scripts/test_log_run.py`) + 15 Node test-runner tests
-(`crew/scripts/*.test.mjs`) + 17 vitest tests (`console/lib/*.test.ts`),
+view, deliverability checker, ICP profile switcher, and review-before-send
+queue, all sharing TypeScript code with the funnel through
+`packages/shared/` (a real pnpm workspace package, replacing a cross-app
+relative import flagged as a risk in Sprint 4). Signals (hiring, Meta Ad
+Library, Google Ads Transparency) fold into the fit score with
+configurable per-signal weights (`engine/config/signals.yaml`).
+`crew/mcp/atrium_engine_server.py` exposes the engine's providers as MCP
+tools (PRD v8's MCP automation layer). 90 pytest tests (`engine/`) + 7
+pytest tests (`crew/scripts/test_log_run.py`) + 5 pytest tests
+(`crew/mcp/test_atrium_engine_server.py`) + 15 Node test-runner tests
+(`crew/scripts/*.test.mjs`) + 23 vitest tests (`console/lib/*.test.ts`),
 all external calls mocked. Source of truth for product decisions:
 `docs/Atrium-System-PRD-v8.docx` — v8 consolidates and supersedes v5,
 adding the Lead Engine, MCP automation layer, review-before-send queue, and
@@ -83,20 +86,27 @@ conversation's own process.
   Sprint 4: `push_status.mjs`, `fetch_leads.mjs`), Supabase calls mocked.
 - `python3 -m pytest crew/scripts/test_*.py -v` — crew Python script tests
   (7 as of Sprint 5: `log_run.py`'s cost logging and per-profile summary).
-- `pnpm --filter @atrium/console exec vitest run` — console unit tests (17
-  as of Sprint 5: `leads.ts`, `deliverability.ts`, `icp.ts`), all
-  Supabase/DNS/filesystem calls injectable and mocked.
+- `pip install -r engine/requirements.txt -r crew/mcp/requirements.txt &&
+  python3 -m pytest crew/mcp/test_*.py -v` — MCP server tool tests (5 as
+  of Sprint 7), provider classes mocked.
+- `python3 crew/mcp/atrium_engine_server.py` — run the Atrium Engine MCP
+  server (places/contact/verify/signals tools) for a Claude Code agent to
+  connect to.
+- `pnpm --filter @atrium/console exec vitest run` — console unit tests (23
+  as of Sprint 7: `leads.ts`, `deliverability.ts`, `icp.ts`, `review.ts`),
+  all Supabase/DNS/filesystem calls injectable and mocked.
 - `psql < supabase/schema.sql` (or paste into the Supabase SQL Editor) —
   create the `leads`/`lead_signals`/`artifacts`/`runs`/`icp_profiles`/
-  `campaigns` tables. No Supabase project is linked yet as of Sprint 5.
+  `campaigns` tables. No Supabase project is linked yet as of Sprint 7.
 
 Key directories: `web/` (public funnel, Vercel), `console/` (operator
 console, local), `launcher/` (Node helper bridging console to Claude Code),
 `packages/shared/` (TypeScript shared between `web` and `console` — the
 Supabase client/types and the elicitation engine; both apps depend on it
 via `workspace:*`, never a relative import across the package boundary),
-`crew/` (orchestrator, skills, agents, scripts, templates, config — installed
-to the Claude config dir, not run from here directly), `engine/` (Lead
+`crew/` (orchestrator, skills, agents, scripts, templates, config —
+installed to the Claude config dir, not run from here directly; `crew/mcp/`
+is the exception — it runs in place as an MCP server), `engine/` (Lead
 Engine — sourcing, enrichment, verification, dedup, scoring, admission,
 Supabase output behind swappable interfaces; see `engine/README.md`),
 `supabase/` (shared schema — `schema.sql`).

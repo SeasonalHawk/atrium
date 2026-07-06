@@ -44,3 +44,12 @@ jobs:
         with: { python-version: "3.11" }
       - run: pip install pytest
       - run: python3 -m pytest crew/scripts/test_*.py -v
+
+  crew-mcp-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r engine/requirements.txt -r crew/mcp/requirements.txt
+      - run: python3 -m pytest crew/mcp/test_*.py -v

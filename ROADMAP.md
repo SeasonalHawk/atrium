@@ -221,11 +221,29 @@ were already real, substantial content (not stubs) from Sprint 1's
 mechanical adaptation — verified via `grep -c TODO` returning 0 across all
 four `SKILL.md` files, so no rework was needed there.
 
-### Sprint 7 — The review queue and MCP servers (9 CC hrs)
+### Sprint 7 — The review queue and MCP servers (9 CC hrs) ✅ Done
 
 - Review-before-send queue in the console (4 hrs) — **the single most
   important screen in the whole system: this is the trust mechanism.**
 - Custom MCP servers: places, email finder, verifier, signals (5 hrs).
+
+**Verified:** `console/lib/review.ts` (`fetchReviewQueue`, `decideReview`)
+reads/writes Supabase leads through an injectable client — approving a
+lead sets `reviewState: "approved"` and advances `stage` to `"contacted"`;
+rejecting or holding records the decision but leaves the lead in the
+`"review"` stage so it's never silently dropped from the queue.
+`console/app/api/review/route.ts` (GET the queue, PATCH a decision) backs
+`console/app/review/page.tsx` — nothing in this surface sends outreach
+itself, matching PRD Non-Goal 2. 6 new vitest tests (23 total in
+`console/`). `crew/mcp/atrium_engine_server.py` is a real MCP server
+(the official `mcp` Python SDK's `FastMCP`) exposing four tools —
+`search_places`, `find_contact_email`, `verify_email`, `collect_signals`
+— each a thin wrapper around an already-tested engine provider
+(`google_places.py`, `contact_finder.py`, `email_verifier.py`, the three
+Sprint 6 signal providers); none fabricates a result, a missing API key
+surfaces the provider's own `ConfigurationError`. 5 new pytest tests
+(`crew/mcp/test_atrium_engine_server.py`), provider classes mocked. CI
+gained a `crew-mcp-tests` job.
 
 ### Sprint 8 — Connect, schedule, notify (6 CC hrs)
 
