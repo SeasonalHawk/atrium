@@ -107,6 +107,40 @@ The one Atrium addition with no reference equivalent. Route to
 from Supabase into the workspace for the crew to work — see that file and
 Sprint 2+ of `ROADMAP.md` for status; not implemented yet.
 
+### Local List Import (not a `/atrium` command)
+
+Before any Supabase-backed sourcing exists (Phase 2+), the operator imports
+a warm or conference list directly:
+
+```bash
+python3 crew/scripts/import_list.py <leads.csv> --source-detail "Conference name"
+```
+
+This writes one target JSON file per row into `crew/workspace/targets/`
+(source `"list-import"`, stage `"sourced"`), each ready to hand to
+`/atrium prospect <companyUrl>` or `/atrium qualify <companyUrl>`. It is a
+plain script the operator runs directly, not a slash command — there is no
+Supabase or console to route through yet.
+
+## Cost Logging (every command, after dispatch)
+
+After a command completes, log it so Phase 2's economics model (PRD v8
+Section 15) gets measured data instead of another assumption:
+
+```bash
+python3 crew/scripts/log_run.py --command <command> --target "<company>" --cost-usd <estimate>
+```
+
+- `<command>` is the Atrium command that ran (`prospect`, `qualify`, etc).
+- `--cost-usd` is a best-effort estimate when the real cost isn't directly
+  observable; log it anyway rather than skip logging — a rough number beats
+  no number for spotting per-command cost trends over time.
+- Entries land in `crew/workspace/cost-log.jsonl` (gitignored — this is
+  local operational data, not source). Run
+  `python3 crew/scripts/log_run.py --summary` any time for aggregate stats.
+- This step never blocks a run and never appears in the operator-facing
+  artifact — it's operational instrumentation, not a deliverable.
+
 ## Business Context Detection
 
 Before running any analysis, detect the prospect's company type:
