@@ -134,8 +134,16 @@ across every ICP profile on a GitHub Actions cron schedule and posts a
 webhook notification for any hot lead, closing out Phase 3's Definition
 of Done.
 
+**Phase 4 (Full Integration and Inbound): in progress.** The inbound
+consultation funnel (`web/app/funnel`) is real — a four-step
+elicitation-driven wizard (company, challenge, timeline, budget) backed
+by a Zustand store, followed by a suggested-slot picker that books
+straight through Cal.com's API and fires the Resend confirmation and
+operator alert. Screenshots coming once a live Supabase/Cal.com/Resend
+project is linked.
+
 `docs/Atrium-System-PRD-v8.docx` consolidates and supersedes v5, adding the
 Lead Engine, an MCP automation layer, a review-before-send queue, and
 configurable multi-profile ICP targeting. See [`ROADMAP.md`](ROADMAP.md)
-for the current five-phase, sprint-by-sprint build plan (8 of 14 sprints
+for the current five-phase, sprint-by-sprint build plan (9 of 14 sprints
 done).

@@ -4,18 +4,47 @@
 // web/config/app.config.ts, never hardcoded here.
 import { Resend } from "resend";
 
-function getClient() {
+export interface ResendLike {
+  emails: {
+    send(payload: { from: string; to: string; subject: string; text: string }): Promise<unknown>;
+  };
+}
+
+function getClient(): ResendLike {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) throw new Error("RESEND_API_KEY must be set (see .env.example)");
-  return new Resend(apiKey);
+  return new Resend(apiKey) as unknown as ResendLike;
 }
 
-export async function sendBookingConfirmation(_to: string, _scheduledAt: string) {
-  // TODO Phase 1: render and send the customer confirmation email.
-  throw new Error("not implemented");
+function formatScheduledAt(scheduledAt: string): string {
+  return new Date(scheduledAt).toUTCString();
 }
 
-export async function sendOperatorAlert(_leadCompany: string, _scheduledAt: string) {
-  // TODO Phase 1: send the operator alert to config.operatorEmail.
-  throw new Error("not implemented");
+export async function sendBookingConfirmation(
+  to: string,
+  scheduledAt: string,
+  senderEmail: string,
+  client: ResendLike = getClient(),
+) {
+  return client.emails.send({
+    from: senderEmail,
+    to,
+    subject: "Your AltoLumo consultation is confirmed",
+    text: `Your consultation is confirmed for ${formatScheduledAt(scheduledAt)}. We'll send a calendar invite shortly. Reply to this email if you need to reschedule.`,
+  });
+}
+
+export async function sendOperatorAlert(
+  leadCompany: string,
+  scheduledAt: string,
+  senderEmail: string,
+  operatorEmail: string,
+  client: ResendLike = getClient(),
+) {
+  return client.emails.send({
+    from: senderEmail,
+    to: operatorEmail,
+    subject: `New consultation booked: ${leadCompany}`,
+    text: `${leadCompany} booked a consultation for ${formatScheduledAt(scheduledAt)}.`,
+  });
 }

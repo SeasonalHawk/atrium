@@ -292,10 +292,56 @@ launch-ready.
 
 **Claude Code hours: 29 · Solo dev hours: 84**
 
-### Sprint 9 — The inbound funnel (8 CC hrs)
+### Sprint 9 — The inbound funnel (8 CC hrs) ✅ Done
 
 - Inbound consultation funnel on Vercel, Elicitation-driven (5 hrs).
 - Cal.com booking and Resend confirmation + alert (3 hrs).
+
+**Verified:** Tailwind was never actually wired into `web/` (no
+`tailwind.config.ts`, `postcss.config.mjs`, or `globals.css` existed,
+despite `tailwindcss` being a listed dependency since Sprint 1) — fixed
+for real this time, with the AltoLumo Brand Book v8 palette and Inter-only
+typography from `docs/mockup/atrium-v8-model.html` as the source of truth
+for the tokens. `packages/shared/src/elicitation.ts`'s `ElicitationQuestion`
+gained a `text_input` type alongside `single_select`, plus real pure
+step-management helpers (`isAnswered`, `isPayloadComplete`,
+`nextIncompleteIndex`, `answerQuestion`) — the funnel's React wizard
+drives these directly against its own render loop rather than through a
+Promise-based `present()`, since a single Promise can't surface
+intermediate per-step UI state; `present()` stays honestly unimplemented
+until a genuinely headless caller needs it. 11 new vitest tests in
+`packages/shared/`.
+
+`web/app/funnel/page.tsx` is a real four-step wizard (company, challenge,
+timeline, budget) backed by a Zustand store (`web/lib/funnelStore.ts`),
+submitting to `/api/lead` on completion and then presenting six suggested
+consultation slots (`web/lib/suggestedSlots.ts`, weekdays only, two times
+a day) for `/api/booking`. `web/lib/leadIntake.ts` maps the funnel's
+tappable labels (e.g. "AI strategy") to the slug enums Supabase and
+`web/lib/validation.ts`'s Zod schema expect. `web/lib/calcom.ts`'s
+`reserveSlot()` calls Cal.com's real Bookings API directly once the
+visitor picks a slot and provides their name/email — a deliberate
+departure from the original embed-Cal.com's-iframe-plus-webhook design
+noted in the file, made to keep the visitor on-brand through the whole
+flow and avoid standing up a public webhook receiver before this app is
+even deployed. `web/lib/resend.ts` sends the real booking confirmation
+and operator alert via the Resend SDK. 29 new vitest tests across
+`web/lib/*.test.ts` (booking, calcom, resend, funnelStore, suggestedSlots,
+leadIntake), all HTTP/email calls mocked.
+
+Ran the real dev server and drove the full funnel through a real browser
+(`pnpm --filter @atrium/web dev`, Chrome DevTools MCP) — this is where a
+real bug surfaced and got fixed before shipping: `handleSelect`/
+`handleTextSubmit` were submitting the component's stale `payload` closure
+to `/api/lead` on the final step, missing the just-selected answer
+entirely (confirmed via the browser's own validation error, which showed
+`received: undefined` for `budgetBand`). Fixed by threading the
+freshly-computed payload
+into `submitLead()` explicitly instead of reading the closure variable.
+Re-verified the full flow end-to-end afterward — the fix works; the
+funnel currently surfaces a real "SUPABASE_URL and SUPABASE_ANON_KEY must
+be set" error at submission, expected and correct since no Supabase
+project is linked yet (consistent with every other stage in this repo).
 
 ### Sprint 10 — Full console and NL sourcing (9 CC hrs)
 

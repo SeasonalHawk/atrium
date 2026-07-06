@@ -10,7 +10,14 @@
     "./supabase": "./src/supabase.ts",
     "./elicitation": "./src/elicitation.ts"
   },
+  "scripts": {
+    "test": "vitest run"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0",
+    "typescript": "^5.5.0"
   }
 }
