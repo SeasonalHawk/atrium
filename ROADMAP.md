@@ -1,175 +1,260 @@
-# Atrium Build Roadmap
+# Atrium Build Roadmap (PRD v8)
 
 One-week sprints for a solo operator (that's you), building with Claude Code
 as the execution engine. Framework: classic MVP — de-risk the riskiest
 assumption first, ship a thin vertical slice, then expand outward. No sprint
-ships UI for something the crew can't yet prove out for real.
+ships UI for something the engine or crew can't yet prove out for real.
 
-Pace assumption: ~8-10 hours/week, matching PRD v5 Section 12's own
-calendar math (Phase 1 in ~5 weeks at that pace). If you have a lighter or
-heavier week, slide the sprint, don't shrink the scope inside it — each
-sprint below is sized to end on a working, demonstrable thing, not a
-partial one.
+**This replaces the earlier v5-based roadmap.** PRD v8 consolidates and
+supersedes PRD v5, merging the crew (`ai-sales-team-claude`) with a new Lead
+Engine (`28AXE/lead-engine`) that finds and verifies leads before the crew
+ever sees them, adds a review-before-send queue as the one human checkpoint,
+an MCP automation layer, and configurable multi-profile ICP targeting. The
+build sequence is explicitly ordered "cheapest, fastest-to-revenue work
+first" — five phases instead of v5's three.
 
-Rule for every sprint: it ends with something you can run and watch happen,
-not a pile of unconnected files. If a sprint doesn't produce that, it isn't
-done yet.
+Pace assumption: ~10 hours/week, matching PRD v8 Section 14's own calendar
+math. The phase-end weeks below are **cumulative from project start**, taken
+directly from the PRD, not re-derived: Phase 1 done by ~week 2, Phase 2 by
+~week 5, Phase 3 by ~week 8, Phase 4 by ~week 11-12. Phase 5 is additive and
+has no calendar commitment in the PRD — it opens the system to paying
+tenants once AltoLumo's own use is solid.
+
+Rule for every sprint: it ends with something you can run and watch happen.
+If a sprint doesn't produce that, it isn't done yet.
+
+**Why this order, not another one:** the PRD's own feasibility check (run
+during specification, not assumed) confirms the core scoring logic works
+before a single line of the surrounding system exists — a sample Series A
+lead scored BANT 75/100 (budget 19, authority 23, need 16, timeline 17),
+MEDDIC 83% complete, grade A. The campaign cost model checked out
+arithmetically too: about $0.66 per qualified lead across campaigns of 100,
+200, and 500 sourced leads, supporting a 3-5x margin at a $5-8/lead charge.
+That's why Phase 1 is "make the crew work, locally, on leads you already
+have" — it's the cheapest possible proof that the expensive parts (Lead
+Engine, MCP automation, multi-tenant) are worth building at all.
 
 ---
 
 ## Sprint 0 — Inception ✅ Done
 
-- PRD v5 read, verified against the reference repo.
-- Repo scaffolded to PRD Section 7 exactly: `web/`, `console/`, `launcher/`,
-  `crew/` (15 sub-skills, 5 agents, 4 script stubs, 6 templates, config).
-- `github.com/SeasonalHawk/atrium` live, public, `main` + `dev`.
-- Project `CLAUDE.md` and `README.md` written.
-- Interactive system model built (brand-accurate, AltoLumo Brand Book v8:
-  Paper/Ink Navy/Steel Blue, Inter, real logo, real crew persona photos).
-- Pexels API client working and verified against your live key.
+- PRD v5 read and scaffolded; PRD v8 (the consolidation) reviewed in full.
+- Repo live at `github.com/SeasonalHawk/atrium`, `main` + `dev`.
+- Interactive Phase 0 mock-up built and extended for v8: architecture, the
+  six-step Lead Engine pipeline, the crew persona roster, the four ICP
+  profiles, the pipeline board, a simulated prospect run (with the
+  admission-gate drop-off visible), the review-before-send queue, the
+  inbound funnel, and the scoring legend — `docs/mockup/atrium-v8-model.html`.
+- Pexels API client working and verified.
 
-You're not starting from zero. Sprint 1 starts from a real skeleton.
-
----
-
-## PHASE 1 — THE MVP (Sprints 1-5)
-
-The riskiest assumption in this whole product isn't the console, the
-funnel, or Supabase — it's whether the crew can actually turn a company URL
-into a trustworthy score. Prove that before building anything around it.
-
-### Sprint 1 — Prove the crew works (no UI, no database)
-
-**Goal:** run `/atrium prospect <a real company>` in Claude Code and get
-back a real `PROSPECT-ANALYSIS.md` with a real composite score you'd trust.
-
-- Install the reference crew per `install.sh` convention into your Claude
-  config directory (`crew/atrium`, `crew/skills/*`, `crew/agents/*`,
-  `crew/scripts/*`, `crew/templates/*`).
-- Implement `crew/scripts/analyze_prospect.py` and `contact_finder.py` for
-  real (`pip install -r crew/requirements.txt` first).
-- Implement the 5 agents (`crew/agents/atrium-*.md`) against their real
-  category logic — Company Fit 25%, Contact Access 20%, Opportunity Quality
-  20%, Competitive Position 15%, Outreach Readiness 20% — reading weights
-  from `crew/config/qualify.config.json`, never hardcoded.
-- Wire `crew/atrium/SKILL.md` to route `prospect` through discovery →
-  5 parallel agents → synthesis.
-- **Demo at end of week:** run `/atrium prospect` against 3 real target
-  companies you actually care about. Read the 3 analyses. Do the scores
-  and grades feel right? If not, this is the week to argue with the
-  scoring model — before a console makes it feel more "done" than it is.
-
-### Sprint 2 — Qualification and the full command set
-
-**Goal:** `/atrium qualify` produces real BANT + MEDDIC reasoning, and the
-orchestrator routes all 14 commands (even if most are still thin).
-
-- Implement `crew/scripts/lead_scorer.py` for real: Budget, Authority,
-  Need, Timeline each 0-25, Strong/Moderate/Weak/Absent evidence per
-  signal, never a fabricated signal.
-- Wire the kajiro-prompt-optimizer-pro Auto-mode step into the
-  orchestrator's dispatch path (`crew/config/kajiro.config.json` already
-  holds the rubric weights) — silent, no scorecard surfaced.
-- Fill in `atrium-research`, `atrium-contacts`, `atrium-outreach`,
-  `atrium-report` skills enough that all 14 commands resolve to something
-  real rather than a TODO.
-- **Demo at end of week:** run `prospect` → `qualify` → `outreach` back to
-  back on one target from the command line. You should be able to hand
-  someone the resulting markdown files and have them make sense on their
-  own.
-
-### Sprint 3 — Supabase: the crew starts writing to a database
-
-**Goal:** a prospect run's score, grade, and stage land in a real Supabase
-table, not just a markdown file in a folder.
-
-- Stand up the Supabase project (`SUPABASE_URL`, keys into `.env.local`,
-  never committed).
-- Create the `leads`, `targets`, `runs`, `artifacts` tables per the
-  `Lead`/`Run`/`Artifact` interfaces in `web/lib/supabase.ts`.
-- Implement `crew/scripts/push_status.mjs` (writes score/grade/stage back)
-  and `crew/scripts/fetch_leads.mjs` (pulls new-stage leads in).
-- **Demo at end of week:** run a prospect against a target added directly
-  in Supabase, then query the table and see the composite score, grade,
-  and category breakdown sitting there.
-
-### Sprint 4 — Launcher + a read-only console board
-
-**Goal:** click a button in a browser, watch a real crew run happen, see
-the result on a board — no more terminal-only workflow.
-
-- Implement `launcher/server.mjs` for real: accept a `RunRequest`, invoke
-  the corresponding `/atrium` command via `run-map.mjs`, track status.
-- Implement `console/app/api/run/route.ts` to call the launcher.
-- Implement `console/app/page.tsx` (the pipeline board) reading real
-  Supabase data, grouped by `LeadStage`, and `console/app/lead/[id]/page.tsx`
-  for the score breakdown.
-- **Demo at end of week:** open the console locally (`pnpm dev:console`),
-  click "Run prospect" on a real target, watch it go from queued → running
-  → done, and see the grade badge land on the board.
-
-### Sprint 5 — Inbound funnel + booking (Phase 1 complete)
-
-**Goal:** the other half of the business — a real person books a real
-consultation on their phone, and it shows up next to your outbound
-prospects on the same board.
-
-- Build the elicitation funnel (`web/app/funnel/page.tsx`,
-  `web/data/funnel.questions.ts`) as an actual one-question-at-a-time
-  mobile flow.
-- Wire Cal.com (`web/lib/calcom.ts`) for real slot booking.
-- Wire Resend (`web/lib/resend.ts`) for the customer confirmation and
-  operator alert.
-- Implement `web/app/api/lead/route.ts` and `web/app/api/booking/route.ts`.
-- **Demo at end of week — this is the real Phase 1 Definition of Done
-  (PRD Section 11):** hand your phone to someone, have them book a
-  consultation through the funnel, watch the confirmation email land, get
-  the operator alert yourself, and see the lead appear on your console
-  board next to your outbound prospects, workable by the same crew.
-
-**At this point you have a real MVP.** Both lead streams work, the crew
-produces trustworthy scores, and you manage it all from one board. Everything
-past this line is depth, not proof-of-concept.
+Sprint 1 starts from a real skeleton and a validated concept, not zero.
 
 ---
 
-## PHASE 2 — CORE FEATURES (Sprints 6-9, lighter detail)
+## PHASE 1 — LOCAL MVP CREW (Sprints 1-2, cumulative by ~week 2)
 
-Per PRD Section 11, Phase 2 is roughly half the Claude Code hours of Phase 1
-(17 vs 49) — expect faster sprints now that the scaffolding argument is won.
+**Goal:** the crew working leads locally from the command line, almost no
+cash, no infrastructure. The fastest path to a first paying conversation —
+work leads you already have (a conference list, warm intros) before
+building anything that finds new ones.
 
-- **Sprint 6:** Outreach + follow-up skills against the real templates,
-  operator-reviewed (never auto-sent, per PRD Non-Goal 2).
-- **Sprint 7:** Meeting prep + proposal skills; these lean on the
-  qualification data you already have from Sprint 2.
-- **Sprint 8:** Report + report-pdf (`generate_pdf_report.py` for real),
-  console runs view and artifact viewer.
-- **Sprint 9:** ICP editor on the elicitation engine, `sync_workspace.mjs`
-  reconciliation for write-back failures.
+**Claude Code hours: 22 · Solo dev hours: 64**
 
-## PHASE 3 — POLISH AND LAUNCH (Sprints 10-12, lighter detail)
+### Sprint 1 — Install and wire the crew (13 CC hrs)
 
-- **Sprint 10:** Objections, ICP tuning, competitors skill.
-- **Sprint 11:** Quick snapshot command, accessibility pass on the funnel,
-  error-state hardening across the console (PRD Section 10's edge cases).
-- **Sprint 12:** Deployment lockdown — env vars finalized, funnel deployed
-  to Vercel for real, README screenshots taken from the actual running
-  console (case-study standard), CI green on every push.
+- Install and adapt the crew from the reference repo (4 hrs).
+- Author the `/atrium` orchestrator and command routing (3 hrs).
+- Wire kajiro-prompt-optimizer-pro into the orchestrator dispatch, Auto
+  mode, silent (2 hrs).
+- Adapt the 5 agents with config-driven weights — `qualify.config.json`,
+  never hardcoded (4 hrs).
+
+**Demo at end of week:** `/atrium prospect` routes through all five agents
+and returns *something*, even if the scoring still needs Sprint 2's tuning.
+
+### Sprint 2 — Score real leads, preload profiles (9 CC hrs)
+
+- Wire `lead_scorer.py` and `analyze_prospect.py` for real (2 hrs).
+- Simple CSV import of a warm or conference list (2 hrs).
+- Run `/atrium prospect` and `qualify` on real targets, review the output
+  (1 hr) — **this is the week you argue with the scoring model if it feels
+  wrong, before anything is built on top of it.**
+- Preload the four AltoLumo ICP profiles as config (2 hrs).
+- Instrument per-lead and per-audit cost logging (2 hrs) — so Phase 2's
+  economics model gets measured data, not another assumption.
+
+**Definition of Done, Phase 1 (PRD v8):** import a list or supply a URL,
+run `/atrium prospect`, and receive a composite 0-100 score, a grade, a
+BANT + MEDDIC qualification with evidence, and drafted outreach — all
+locally, review-before-send already the default posture. The five category
+weights come from config and sum to one. Kajiro optimizes silently. Cost is
+the Claude subscription only.
 
 ---
+
+## PHASE 2 — LEAD ENGINE + SHARED PIPELINE (Sprints 3-5, cumulative by ~week 5)
+
+**Goal:** the machine finds leads and a shared pipeline holds them. You
+stop sourcing by hand.
+
+**Claude Code hours: 33 · Solo dev hours: 98**
+
+### Sprint 3 — Sourcing and enrichment (12 CC hrs)
+
+- Scaffold the engine, config loader, base stage interfaces (3 hrs).
+- Build Google Places + SERP + Claude web discovery (4 hrs).
+- Build contact and email finding (3 hrs).
+- Build email verification and the valid/risky/invalid gate (2 hrs).
+
+### Sprint 4 — Scoring, admission, persistence (9 CC hrs)
+
+- Build first-pass scoring, the admission gate, and dedup (3 hrs).
+- Integrate Supabase — leads, targets, runs tables (3 hrs).
+- Database bridge scripts between crew and Supabase (3 hrs).
+
+### Sprint 5 — Console, deliverability, profiles (12 CC hrs)
+
+- Minimal console pipeline board and lead detail (5 hrs).
+- Deliverability foundation: sending domain, SPF, DKIM, DMARC (2 hrs).
+- ICP profile library and switcher (3 hrs).
+- Campaign cost metering, cost per campaign per profile (2 hrs).
+
+**Definition of Done, Phase 2 (PRD v8):** a run discovers, enriches,
+verifies, scores, and admits leads, writing only valid, good-fit leads to
+Supabase, where they appear on the board and the crew works them.
+Duplicates are merged. A test send from admitted leads measures a bounce
+rate under 2%.
+
+---
+
+## PHASE 3 — AUTOPILOT, SIGNALS, REVIEW-BEFORE-SEND (Sprints 6-8, cumulative by ~week 8)
+
+**Goal:** the system runs on its own and asks for you only at the review
+queue.
+
+**Claude Code hours: 27 · Solo dev hours: 78**
+
+### Sprint 6 — Signals and crew depth (12 CC hrs)
+
+- Meta Ad Library, Google Ads Transparency, hiring signals (6 hrs).
+- Fold signals into scoring with configurable weights (2 hrs).
+- Crew outreach, follow-up, prep, proposal skills (4 hrs).
+
+### Sprint 7 — The review queue and MCP servers (9 CC hrs)
+
+- Review-before-send queue in the console (4 hrs) — **the single most
+  important screen in the whole system: this is the trust mechanism.**
+- Custom MCP servers: places, email finder, verifier, signals (5 hrs).
+
+### Sprint 8 — Connect, schedule, notify (6 CC hrs)
+
+- Connect existing MCP tools: Sheets, CRM, web search, Gmail draft (3 hrs).
+- Scheduled autonomous run via GitHub Actions cron (2 hrs).
+- Hot lead notification (1 hr).
+
+**Definition of Done, Phase 3 (PRD v8):** on a schedule, the system sources,
+verifies, scores, works, and drafts, then presents a review queue; Claude
+operates the tools through MCP; you approve, edit, or reject; nothing sends
+without approval; you're notified of hot leads.
+
+---
+
+## PHASE 4 — FULL INTEGRATION AND INBOUND (Sprints 9-12, cumulative by ~week 11-12)
+
+**Goal:** inbound and outbound share one pipeline behind a full console,
+launch-ready.
+
+**Claude Code hours: 29 · Solo dev hours: 84**
+
+### Sprint 9 — The inbound funnel (8 CC hrs)
+
+- Inbound consultation funnel on Vercel, Elicitation-driven (5 hrs).
+- Cal.com booking and Resend confirmation + alert (3 hrs).
+
+### Sprint 10 — Full console and NL sourcing (9 CC hrs)
+
+- Full console: targets, runs, artifacts, ICP editor, reports (6 hrs).
+- Natural-language sourcing — describe a market, get queries (3 hrs).
+
+### Sprint 11 — Reporting and the growth stack (7 CC hrs)
+
+- Report and report-pdf via `generate_pdf_report.py` (3 hrs).
+- Host the site and funnel on Cloudflare with DNS and CDN (2 hrs).
+- Instrument the site and funnel with PostHog analytics (2 hrs).
+
+### Sprint 12 — Distribution and launch hardening (5 CC hrs)
+
+- Content distribution via Repurpose and a community channel (2 hrs).
+- Accessibility, error hardening, deployment lockdown (3 hrs).
+
+**Definition of Done, Phase 4 (PRD v8):** a visitor books through the funnel
+and the lead joins the same pipeline as outbound; the full console manages
+the system; natural-language sourcing works; the system is deployed and
+hardened.
+
+---
+
+## PHASE 5 — MULTI-TENANT (Sprints 13-14, additive — no PRD calendar commitment)
+
+**Goal:** open the system to paying tenants beyond AltoLumo, each with their
+own profiles and isolated pipeline. AltoLumo stays free and single-tenant
+through Phase 4 — this phase is additive and never blocks AltoLumo's own
+use.
+
+**Claude Code hours: 13 · Solo dev hours: 39**
+
+### Sprint 13 — Isolation (6 CC hrs)
+
+- Tenant isolation and Supabase row-level security (4 hrs).
+- Per-tenant profile libraries (2 hrs).
+
+### Sprint 14 — Monetization (7 CC hrs)
+
+- Usage metering and billing (4 hrs).
+- Self-serve profile builder (3 hrs).
+
+**Definition of Done, Phase 5 (PRD v8):** a second tenant defines their own
+ICP profiles, runs campaigns isolated from AltoLumo data, and is billed by
+usage. AltoLumo remains the owner tenant at no charge.
+
+---
+
+## Total (PRD v8 Section 14)
+
+| Phase | Claude Code Hours | Solo Dev Hours |
+|---|---|---|
+| Phase 1 | 22 | 64 |
+| Phase 2 | 33 | 98 |
+| Phase 3 | 27 | 78 |
+| Phase 4 | 29 | 84 |
+| Phase 5 | 13 | 39 |
+| **Total** | **124** | **363** |
 
 ## Weekly ritual
 
 At the start of each sprint: re-read that sprint's goal above, out loud, to
-yourself, before opening an editor. At the end: the demo line is the bar —
-if you can't do the demo, the sprint isn't done, no matter how much code got
-written. Carry unfinished work forward as next week's first task rather than
-starting the next sprint's scope early; half of two sprints is worse than
-one sprint actually finished.
+yourself, before opening an editor. At the end: the demo line — or the
+phase's Definition of Done, on a phase's final sprint — is the bar. If you
+can't do it, the sprint isn't done, no matter how much code got written.
+Carry unfinished work forward as next week's first task rather than starting
+the next sprint's scope early; half of two sprints is worse than one sprint
+actually finished.
 
-If reality disagrees with a sprint's estimate — the scoring feels wrong in
-Sprint 1, Supabase takes longer than expected in Sprint 3 — that's real
-signal. Stop and fix the model before moving forward. That's the whole
-point of proving the crew first: it's cheaper to be wrong about a scoring
-algorithm in Sprint 1 than to discover it in Sprint 5 with a console built
-on top of it.
+If reality disagrees with an estimate — the scoring feels wrong in Sprint 2,
+email verification takes longer than expected in Sprint 3 — that's real
+signal. Stop and fix the model before moving forward. It's cheaper to be
+wrong about a scoring algorithm in Sprint 2 than to discover it in Sprint 5
+with a Lead Engine and a console built on top of it.
+
+## Compliance line, never negotiable
+
+The Lead Engine uses official and public APIs only — Google Places, a SERP
+API, Claude web search, the Meta Ad Library, the Google Ads Transparency
+Center, a contact-finding API, an email verifier. It **never** logs into
+Instagram, Facebook, X, or LinkedIn to scrape them, and never evades
+anti-bot protection. That's not a style preference — a banned account or a
+poisoned sending domain costs more than manual sourcing ever would, and it's
+explicitly out of scope in PRD v8 Section 9's Data Source Catalog (rated
+Red). If a future sprint is ever tempted to add a scraper for a platform
+without an official API, that's a stop-and-reread-the-PRD moment, not a
+judgment call to make alone at 11pm.

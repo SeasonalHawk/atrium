@@ -71,9 +71,12 @@ Grade bands: A+ (90-100), A (75-89), B (60-74), C (40-59), D (0-39).
 ## Screenshots
 
 Phase 1 has not shipped a running UI yet. Until then, see the interactive
-system model built during inception — it demonstrates the architecture,
-pipeline board, a simulated prospect run, the inbound funnel, and the
-scoring legend against mock data.
+Phase 0 system model at
+[`docs/mockup/atrium-v8-model.html`](docs/mockup/atrium-v8-model.html) — it
+demonstrates the architecture, the Lead Engine's sourcing pipeline and
+admission gate, the four ICP profiles, the pipeline board, a simulated
+prospect run, the review-before-send queue, the inbound funnel, and the
+scoring legend, all against mock data.
 
 ## Technologies used
 
@@ -98,5 +101,9 @@ for the complete product specification.
 
 ## Status
 
-Inception. Repository scaffolded per the PRD's Section 7 project structure.
-Phase 1 (Foundation) build has not started.
+Inception. Repository scaffolded per PRD v5's Section 7 project structure.
+`docs/Atrium-System-PRD-v8.docx` consolidates and supersedes v5, adding a
+Lead Engine, an MCP automation layer, a review-before-send queue, and
+configurable multi-profile ICP targeting. See
+[`ROADMAP.md`](ROADMAP.md) for the current five-phase, sprint-by-sprint
+build plan. Phase 1 (Local MVP Crew) build has not started.
