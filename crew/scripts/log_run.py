@@ -22,7 +22,7 @@ from pathlib import Path
 DEFAULT_LOG_PATH = Path("crew/workspace/cost-log.jsonl")
 
 
-def append_entry(log_path, command, target, cost_usd, tokens, note):
+def append_entry(log_path, command, target, cost_usd, tokens, note, icp_profile=None):
     log_path.parent.mkdir(parents=True, exist_ok=True)
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -35,6 +35,8 @@ def append_entry(log_path, command, target, cost_usd, tokens, note):
         entry["tokens"] = tokens
     if note:
         entry["note"] = note
+    if icp_profile:
+        entry["icpProfile"] = icp_profile
     with open(log_path, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     return entry
@@ -86,6 +88,31 @@ def print_summary(log_path):
         avg = f"${stats['cost'] / stats['costed']:.4f}" if stats["costed"] else "n/a"
         print(f"  {cmd:12s} runs={stats['count']:<4d} costed={stats['costed']:<4d} avg_cost={avg}")
 
+    by_profile = summarize_by_profile(entries)
+    if by_profile:
+        print()
+        print("By ICP profile:")
+        for profile, stats in sorted(by_profile.items()):
+            avg = f"${stats['cost'] / stats['costed']:.4f}" if stats["costed"] else "n/a"
+            print(f"  {profile:24s} runs={stats['count']:<4d} costed={stats['costed']:<4d} avg_cost={avg}")
+
+
+def summarize_by_profile(entries):
+    """Group logged runs by icpProfile -- ROADMAP.md Sprint 5, 'Campaign cost
+    metering, cost per campaign per profile'. Entries without an icpProfile
+    (e.g. runs logged before Sprint 5, or manual/no-profile runs) are grouped
+    under 'unassigned' rather than dropped, so totals still reconcile with
+    the command-level summary above."""
+    by_profile = {}
+    for e in entries:
+        profile = e.get("icpProfile", "unassigned")
+        by_profile.setdefault(profile, {"count": 0, "cost": 0.0, "costed": 0})
+        by_profile[profile]["count"] += 1
+        if "costUsd" in e:
+            by_profile[profile]["cost"] += e["costUsd"]
+            by_profile[profile]["costed"] += 1
+    return by_profile
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -97,6 +124,7 @@ def main():
     parser.add_argument("--cost-usd", type=float, default=None, help="Estimated or measured cost in USD")
     parser.add_argument("--tokens", type=int, default=None, help="Token count, if known")
     parser.add_argument("--note", default="", help="Free-text note")
+    parser.add_argument("--icp-profile", default=None, help="ICP profile id this run targeted, e.g. embedded-executive")
     parser.add_argument("--log-path", default=str(DEFAULT_LOG_PATH), help=f"Log file path (default: {DEFAULT_LOG_PATH})")
     parser.add_argument("--summary", action="store_true", help="Print aggregate stats instead of logging a run")
     args = parser.parse_args()
@@ -111,7 +139,7 @@ def main():
         print("Error: --command and --target are required unless --summary is given.", file=sys.stderr)
         sys.exit(1)
 
-    entry = append_entry(log_path, args.command, args.target, args.cost_usd, args.tokens, args.note)
+    entry = append_entry(log_path, args.command, args.target, args.cost_usd, args.tokens, args.note, args.icp_profile)
     print(f"Logged: {json.dumps(entry, ensure_ascii=False)}")
 
 

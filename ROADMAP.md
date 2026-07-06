@@ -148,12 +148,35 @@ Node test-runner tests. Ran the full six-stage pipeline end-to-end via
 admitted (had a contact), 1 correctly held (didn't) — the admission gate
 making a real decision on real data, not a mocked one.
 
-### Sprint 5 — Console, deliverability, profiles (12 CC hrs)
+### Sprint 5 — Console, deliverability, profiles (12 CC hrs) ✅ Done
 
 - Minimal console pipeline board and lead detail (5 hrs).
 - Deliverability foundation: sending domain, SPF, DKIM, DMARC (2 hrs).
 - ICP profile library and switcher (3 hrs).
 - Campaign cost metering, cost per campaign per profile (2 hrs).
+
+**Verified:** extracted `packages/shared/` (a real pnpm workspace package)
+to fix the fragile `console/lib/*` -> `../../web/lib/*` relative import
+flagged as a risk in Sprint 4 — `web` and `console` both now depend on
+`@atrium/shared` via `workspace:*`, confirmed with `pnpm build`/`pnpm lint`
+across every package (0 errors). `console/lib/leads.ts` queries Supabase
+for the pipeline board (`console/app/page.tsx`, one column per
+`LeadStage`) and lead detail (`console/app/lead/[id]/page.tsx`) through an
+injectable client interface — 6 vitest tests, no live Supabase project
+needed. `console/lib/deliverability.ts` checks SPF, DMARC, and DKIM via
+DNS TXT lookups (injectable resolver) — 8 vitest tests covering found,
+missing, and multi-chunk TXT records. `console/lib/icp.ts` +
+`console/app/api/icp/route.ts` + `console/app/icp/page.tsx` read and
+switch `crew/config/icp.config.json`'s new `activeProfileId` field (the
+single source every crew agent and the engine already read) — 3 vitest
+tests. `crew/scripts/log_run.py` gained `--icp-profile` and a
+`summarize_by_profile()` grouping for cost-per-campaign-per-profile — 7
+new pytest tests (the first for this script; `import_list.py` remains the
+only untested crew script). CI gained a `crew-python-tests` job. Full
+verification run: `pnpm build`, `pnpm lint` (0 errors, pre-existing
+warnings only), `engine/` pytest (70 passed), `crew/scripts/*.test.mjs`
+(15 passed), `crew/scripts/test_*.py` (7 passed), console vitest (17
+passed) — 109 tests total, all green.
 
 **Definition of Done, Phase 2 (PRD v8):** a run discovers, enriches,
 verifies, scores, and admits leads, writing only valid, good-fit leads to

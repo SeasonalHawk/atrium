@@ -14,13 +14,18 @@ Owner: Kenneth Benavides, personally. Not an Irongrove project — copyright
 lines use "Copyright © 2026 Kenneth Benavides. All rights reserved."
 
 Current stage: Phase 1 (Local MVP Crew) complete. Phase 2 (Lead Engine +
-Shared Pipeline) in progress, 4 of 14 sprints done overall — `engine/` runs
+Shared Pipeline) complete, 5 of 14 sprints done overall — `engine/` runs
 the full six-stage pipeline (source → enrich → verify → dedup → score →
-admit), `supabase/schema.sql` defines the shared tables, and
+admit), `supabase/schema.sql` defines the shared tables,
 `crew/scripts/push_status.mjs`/`fetch_leads.mjs` bridge the crew to
-Supabase for real. 70 pytest tests (`engine/`) + 15 Node test-runner tests
-(`crew/scripts/*.test.mjs`), all external calls mocked. Source of truth for
-product decisions:
+Supabase for real, and the console has a real pipeline board, lead detail
+view, deliverability checker, and ICP profile switcher, all sharing
+TypeScript code with the funnel through `packages/shared/` (a real pnpm
+workspace package, replacing a cross-app relative import flagged as a risk
+in Sprint 4). 70 pytest tests (`engine/`) + 7 pytest tests
+(`crew/scripts/test_log_run.py`) + 15 Node test-runner tests
+(`crew/scripts/*.test.mjs`) + 17 vitest tests (`console/lib/*.test.ts`),
+all external calls mocked. Source of truth for product decisions:
 `docs/Atrium-System-PRD-v8.docx` — v8 consolidates and supersedes v5,
 adding the Lead Engine, MCP automation layer, review-before-send queue, and
 multi-profile ICP targeting. Source of truth for sequencing: `ROADMAP.md`
@@ -49,7 +54,8 @@ conversation's own process.
 ## Stack and Commands
 
 - Next.js 15, App Router, TypeScript strict mode, no `any`. React 19.
-  Tailwind CSS 3. pnpm workspaces (`web`, `console`, `launcher`).
+  Tailwind CSS 3. pnpm workspaces (`web`, `console`, `launcher`,
+  `packages/shared`).
 - `pnpm install` — install JS workspace deps.
 - `pnpm dev:web` — run the inbound funnel locally.
 - `pnpm dev:console` — run the operator console locally (port 4000).
@@ -72,12 +78,20 @@ conversation's own process.
   4), all HTTP/subprocess calls mocked, no live credentials needed.
 - `node --test crew/scripts/*.test.mjs` — bridge script tests (15 as of
   Sprint 4: `push_status.mjs`, `fetch_leads.mjs`), Supabase calls mocked.
+- `python3 -m pytest crew/scripts/test_*.py -v` — crew Python script tests
+  (7 as of Sprint 5: `log_run.py`'s cost logging and per-profile summary).
+- `pnpm --filter @atrium/console exec vitest run` — console unit tests (17
+  as of Sprint 5: `leads.ts`, `deliverability.ts`, `icp.ts`), all
+  Supabase/DNS/filesystem calls injectable and mocked.
 - `psql < supabase/schema.sql` (or paste into the Supabase SQL Editor) —
   create the `leads`/`lead_signals`/`artifacts`/`runs`/`icp_profiles`/
-  `campaigns` tables. No Supabase project is linked yet as of Sprint 4.
+  `campaigns` tables. No Supabase project is linked yet as of Sprint 5.
 
 Key directories: `web/` (public funnel, Vercel), `console/` (operator
 console, local), `launcher/` (Node helper bridging console to Claude Code),
+`packages/shared/` (TypeScript shared between `web` and `console` — the
+Supabase client/types and the elicitation engine; both apps depend on it
+via `workspace:*`, never a relative import across the package boundary),
 `crew/` (orchestrator, skills, agents, scripts, templates, config — installed
 to the Claude config dir, not run from here directly), `engine/` (Lead
 Engine — sourcing, enrichment, verification, dedup, scoring, admission,
