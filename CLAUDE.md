@@ -15,7 +15,7 @@ lines use "Copyright © 2026 Kenneth Benavides. All rights reserved."
 
 Current stage: Phase 1 (Local MVP Crew) complete. Phase 2 (Lead Engine +
 Shared Pipeline) complete. Phase 3 (Autopilot, Signals, Review-Before-Send)
-in progress, 7 of 14 sprints done overall — `engine/` runs the full
+complete, 8 of 14 sprints done overall — `engine/` runs the full
 seven-stage pipeline (source → enrich → signal → verify → dedup → score →
 admit), `supabase/schema.sql` defines the shared tables,
 `crew/scripts/push_status.mjs`/`fetch_leads.mjs` bridge the crew to
@@ -27,11 +27,15 @@ relative import flagged as a risk in Sprint 4). Signals (hiring, Meta Ad
 Library, Google Ads Transparency) fold into the fit score with
 configurable per-signal weights (`engine/config/signals.yaml`).
 `crew/mcp/atrium_engine_server.py` exposes the engine's providers as MCP
-tools (PRD v8's MCP automation layer). 90 pytest tests (`engine/`) + 7
-pytest tests (`crew/scripts/test_log_run.py`) + 5 pytest tests
-(`crew/mcp/test_atrium_engine_server.py`) + 15 Node test-runner tests
-(`crew/scripts/*.test.mjs`) + 23 vitest tests (`console/lib/*.test.ts`),
-all external calls mocked. Source of truth for product decisions:
+tools (PRD v8's MCP automation layer), and `engine/scheduled_run.py` runs
+the full pipeline across every ICP profile on a GitHub Actions cron
+schedule (`.github/workflows/scheduled-run.yml`), posting a webhook
+notification for hot leads via `engine/src/notify/hot_lead.py`. 107
+pytest tests (`engine/`) + 7 pytest tests (`crew/scripts/test_log_run.py`)
++ 5 pytest tests (`crew/mcp/test_atrium_engine_server.py`) + 15 Node
+test-runner tests (`crew/scripts/*.test.mjs`) + 23 vitest tests
+(`console/lib/*.test.ts`), all external calls mocked. Source of truth for
+product decisions:
 `docs/Atrium-System-PRD-v8.docx` — v8 consolidates and supersedes v5,
 adding the Lead Engine, MCP automation layer, review-before-send queue, and
 multi-profile ICP targeting. Source of truth for sequencing: `ROADMAP.md`
@@ -80,8 +84,12 @@ conversation's own process.
 - `python3 engine/main.py --profile <id> --sources list-import` — run the
   engine without needing any API key (list-import only). Drop `--sources`
   to run all enabled providers once their keys are in `.env.local`.
-- `python3 -m pytest engine/tests/ -v` — engine unit tests (90 as of Sprint
-  6), all HTTP/subprocess calls mocked, no live credentials needed.
+- `python3 -m pytest engine/tests/ -v` — engine unit tests (107 as of
+  Sprint 8), all HTTP/subprocess calls mocked, no live credentials needed.
+- `python3 engine/scheduled_run.py --sources list-import` — run the engine
+  across every configured ICP profile in one invocation (Sprint 8); drop
+  `--sources` for all enabled providers, add `--write-supabase` to persist.
+  `.github/workflows/scheduled-run.yml` runs this on a cron schedule.
 - `node --test crew/scripts/*.test.mjs` — bridge script tests (15 as of
   Sprint 4: `push_status.mjs`, `fetch_leads.mjs`), Supabase calls mocked.
 - `python3 -m pytest crew/scripts/test_*.py -v` — crew Python script tests

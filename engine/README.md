@@ -66,6 +66,26 @@ python3 engine/main.py --profile embedded-executive --sources list-import --writ
 (`founder-advisory`, `embedded-executive`, `growth-operator`,
 `transformation-sprint`, `project-program-leadership`).
 
+### Scheduled runs (Sprint 8)
+
+`engine/scheduled_run.py` runs the full pipeline once per ICP profile in
+one invocation, then checks the combined results for hot leads —
+`.github/workflows/scheduled-run.yml` calls it on a cron schedule (9am ET
+weekdays) and via manual `workflow_dispatch`:
+
+```bash
+python3 engine/scheduled_run.py --sources list-import
+python3 engine/scheduled_run.py --write-supabase   # all enabled sources
+```
+
+### Hot lead notification (Sprint 8)
+
+`engine/src/notify/hot_lead.py`'s `HotLeadNotifier` posts to a Slack
+(-compatible) incoming webhook for any admitted candidate whose
+`fit_score` clears a threshold (`HOT_LEAD_FIT_THRESHOLD`, default 90).
+Requires `HOT_LEAD_WEBHOOK_URL`; skips gracefully like every other
+optional stage when it's unset.
+
 ## Testing
 
 ```bash
@@ -75,7 +95,7 @@ python3 -m pytest engine/tests/ -v
 
 Every HTTP call and the one subprocess call (`claude_web.py`) is mocked in
 tests — no live API keys or network access required to run the suite, and
-no test spends real Claude Code usage. 90 tests as of Sprint 6.
+no test spends real Claude Code usage. 107 tests as of Sprint 8.
 
 The crew↔Supabase bridge scripts (`crew/scripts/push_status.mjs`,
 `fetch_leads.mjs`) have their own Node test-runner suite:

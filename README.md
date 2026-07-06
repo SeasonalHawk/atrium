@@ -121,18 +121,21 @@ pipeline board, lead detail view, deliverability checker (SPF/DKIM/DMARC),
 and ICP profile switcher, all backed by a shared `packages/shared/`
 workspace package instead of a cross-app relative import.
 
-**Phase 3 (Autopilot, Signals, Review-Before-Send): in progress.** The
-Lead Engine now runs a seventh pipeline stage — signals — pulling hiring,
+**Phase 3 (Autopilot, Signals, Review-Before-Send): complete.** The Lead
+Engine now runs a seventh pipeline stage — signals — pulling hiring,
 Meta Ad Library, and Google Ads Transparency intent signals into the
 first-pass fit score with configurable per-signal weights
 (`engine/config/signals.yaml`). The console has a real review-before-send
 queue — approve, reject, or hold every crew-drafted lead before anything
 goes out — and `crew/mcp/` ships a real MCP server exposing the engine's
 places/contact/verification/signal providers as tools a Claude Code agent
-can call directly.
+can call directly. `engine/scheduled_run.py` runs the whole pipeline
+across every ICP profile on a GitHub Actions cron schedule and posts a
+webhook notification for any hot lead, closing out Phase 3's Definition
+of Done.
 
 `docs/Atrium-System-PRD-v8.docx` consolidates and supersedes v5, adding the
 Lead Engine, an MCP automation layer, a review-before-send queue, and
 configurable multi-profile ICP targeting. See [`ROADMAP.md`](ROADMAP.md)
-for the current five-phase, sprint-by-sprint build plan (7 of 14 sprints
+for the current five-phase, sprint-by-sprint build plan (8 of 14 sprints
 done).
