@@ -115,6 +115,17 @@ This script extracts:
 2. Perform manual extraction using WebFetch data
 3. Note in the report that automated extraction was unavailable
 
+### 1.7 Optional: Check for an Existing CRM Record (ROADMAP.md Sprint 8, "Connect existing MCP tools")
+
+If the connected `mcp__claude_ai_HubSpot` tools are available, search for
+the company before treating it as a brand-new prospect (`search_crm_objects`
+or `query_crm_data`). If a record already exists, note its stage and any
+prior contact history in the discovery briefing so the synthesis phase
+doesn't recommend "first touch" outreach to a company that's already been
+worked. This is a read-only check -- HubSpot's connected tools do not
+expose a write/create operation here, so this skill never creates or
+modifies a CRM record itself.
+
 ### 1.6 Compile Discovery Briefing
 
 Before launching subagents, compile a discovery briefing object containing:

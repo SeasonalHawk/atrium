@@ -245,16 +245,43 @@ surfaces the provider's own `ConfigurationError`. 5 new pytest tests
 (`crew/mcp/test_atrium_engine_server.py`), provider classes mocked. CI
 gained a `crew-mcp-tests` job.
 
-### Sprint 8 — Connect, schedule, notify (6 CC hrs)
+### Sprint 8 — Connect, schedule, notify (6 CC hrs) ✅ Done
 
 - Connect existing MCP tools: Sheets, CRM, web search, Gmail draft (3 hrs).
 - Scheduled autonomous run via GitHub Actions cron (2 hrs).
 - Hot lead notification (1 hr).
 
-**Definition of Done, Phase 3 (PRD v8):** on a schedule, the system sources,
-verifies, scores, works, and drafts, then presents a review queue; Claude
-operates the tools through MCP; you approve, edit, or reject; nothing sends
-without approval; you're notified of hot leads.
+**Verified:** documented, honest connections to the MCP tools already
+available in a Claude Code session (no new servers needed for these,
+unlike Sprint 7's custom ones) — `atrium-report`'s optional Google Sheets
+export via `mcp__claude_ai_Google_Drive`, `atrium-outreach`/`atrium-followup`'s
+optional Gmail-draft save via `mcp__claude_ai_Gmail` (draft only, never
+sent, per PRD Non-Goal 2), and `atrium-prospect`'s optional HubSpot CRM
+lookup via `mcp__claude_ai_HubSpot` — noted as read-only since the
+connected HubSpot tools expose no write/create operation. Web search was
+already wired in from Sprint 1's reference adaptation (`WebSearch`
+throughout `atrium-research` and others) — no new work needed there.
+`engine/scheduled_run.py` runs the full pipeline once per configured ICP
+profile in one invocation and checks the combined results for hot leads;
+`.github/workflows/scheduled-run.yml` calls it on a cron schedule (9am ET
+weekdays) and via manual `workflow_dispatch`, every provider skipping
+gracefully if its secret isn't set. `engine/src/notify/hot_lead.py`'s
+`HotLeadNotifier` posts to a Slack-compatible webhook for any admitted
+candidate whose `fit_score` clears a configurable threshold (`HOT_LEAD_FIT_THRESHOLD`,
+default 90) — requires `HOT_LEAD_WEBHOOK_URL`, skips gracefully otherwise.
+17 new pytest tests (107 total in `engine/`). Ran
+`engine/scheduled_run.py --sources list-import` end-to-end across all 5
+ICP profiles with no signal/notification keys set — graceful skip
+throughout, no crash.
+
+**Definition of Done, Phase 3 (PRD v8): met.** On a schedule (GitHub
+Actions cron), the system sources, verifies, scores, and admits leads
+across every ICP profile, then presents a review queue (Sprint 7) where
+the operator approves, edits, rejects, or holds — nothing sends without
+that approval — and hot leads (fit_score ≥ threshold) trigger a webhook
+notification. Claude operates the engine's providers through MCP
+(Sprint 7's custom server) and the console/office tools already connected
+to the session (Sprint 8).
 
 ---
 

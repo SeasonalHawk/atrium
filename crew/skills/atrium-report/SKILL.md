@@ -343,6 +343,26 @@ config at report generation time, never hardcode them here:
 
 ---
 
+## Optional: Export to Google Sheets (ROADMAP.md Sprint 8, "Connect existing MCP tools")
+
+After writing `SALES-REPORT.md`, if the operator asks to share the pipeline
+with someone who isn't in Claude Code, offer to export the Pipeline
+Dashboard table (Section 2) to Google Sheets via the connected
+`mcp__claude_ai_Google_Drive` tools:
+
+1. Convert the dashboard table to CSV (same columns, comma-separated).
+2. Call the Drive MCP's file-creation tool with that CSV content and a name
+   like `Atrium Pipeline — <date>`.
+3. Report back the file's name and that it's in the operator's Drive — do
+   not assume a specific sharing/permission state; that's the operator's
+   own Drive settings, not something this skill changes.
+
+This is export-only: it never reads back from Sheets or overwrites a
+prior export, so re-running `/atrium report` never risks clobbering
+manual edits the operator made to a shared copy.
+
+---
+
 ## Quality Standards
 
 1. **Data Integrity:** Only include data actually found in the prospect files. Never fabricate scores, contacts, or details.

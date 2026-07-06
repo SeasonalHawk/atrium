@@ -806,4 +806,16 @@ Full sequence saved to: OUTREACH-SEQUENCE.md
 - If `DECISION-MAKERS.md` exists, use contact profiles and personalization anchors
 - If `LEAD-QUALIFICATION.md` exists, use pain points and buying signals for messaging
 - If `COMPETITIVE-INTEL.md` exists, use competitive positioning for differentiation angles
+
+## Optional: Save Email 1 as a Gmail Draft (ROADMAP.md Sprint 8, "Connect existing MCP tools")
+
+After writing `OUTREACH-SEQUENCE.md`, if the operator asks to have Email 1
+ready to send from their own inbox, offer to save it as a Gmail draft via
+the connected `mcp__claude_ai_Gmail` tool: pass the contact's email as the
+recipient, the chosen subject line, and the Email 1 body exactly as
+written above -- never edit the copy when moving it into the draft.
+
+This creates a **draft only, never sends** -- consistent with PRD Non-Goal
+2 ("the crew drafts into the console, the operator sends"). The operator
+reviews and sends it from Gmail on their own schedule.
 - Suggest follow-up: `/atrium prep` for meeting preparation after getting a response, `/atrium followup` for post-meeting sequence, `/atrium objections` for deeper objection handling

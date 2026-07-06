@@ -405,3 +405,10 @@ Deal Stage: [Early/Active/Near Decision/Stalled]
 8. **No manipulation tactics.** No fake scarcity, no guilt trips, no "I noticed you opened my email" tracking callouts.
 9. **Respect the prospect's time and intelligence.** They know you want to sell. Be direct about your intent while providing genuine value.
 10. **If previous analysis files exist**, incorporate their data. Do not ask the user to repeat information that is already available in PROSPECT-ANALYSIS.md, COMPANY-RESEARCH.md, or other output files in the working directory.
+
+## Optional: Save the Next Email as a Gmail Draft (ROADMAP.md Sprint 8, "Connect existing MCP tools")
+
+Same pattern as `/atrium outreach`: if the operator asks, save the next
+due follow-up email as a Gmail draft via the connected
+`mcp__claude_ai_Gmail` tool (recipient, subject, body exactly as written)
+rather than sending it. Draft only, never sent -- PRD Non-Goal 2.

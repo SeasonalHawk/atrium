@@ -1,0 +1,31 @@
+# ROADMAP.md Sprint 8: "Scheduled autonomous run via GitHub Actions cron".
+# Runs the Lead Engine across every ICP profile on a schedule, matching
+# PRD v8 Phase 3's Definition of Done: "on a schedule, the system sources,
+# verifies, scores, works, and drafts, then presents a review queue."
+# Every provider skips gracefully if its secret isn't set (see
+# engine/src/core/config_loader.py's require_env), so this workflow is
+# safe to enable before every secret below is provisioned.
+name: scheduled-lead-run
+on:
+  schedule:
+    - cron: "0 13 * * 1-5" # 9am ET, weekdays
+  workflow_dispatch: {}
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r engine/requirements.txt
+      - run: python3 engine/scheduled_run.py --write-supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+          SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
+          HUNTER_API_KEY: ${{ secrets.HUNTER_API_KEY }}
+          ZEROBOUNCE_API_KEY: ${{ secrets.ZEROBOUNCE_API_KEY }}
+          META_AD_LIBRARY_ACCESS_TOKEN: ${{ secrets.META_AD_LIBRARY_ACCESS_TOKEN }}
+          HOT_LEAD_WEBHOOK_URL: ${{ secrets.HOT_LEAD_WEBHOOK_URL }}
+          HOT_LEAD_FIT_THRESHOLD: ${{ secrets.HOT_LEAD_FIT_THRESHOLD }}
