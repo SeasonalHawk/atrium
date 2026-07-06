@@ -1,6 +1,111 @@
 {
-  "_comment": "PRD v5 Section 15, open question 3 default: small and mid-market organizations pursuing AI implementation with a disclosed budget at or above the $10k band. Edited via console/app/icp once Phase 2 ships.",
-  "orgSize": ["small", "mid-market"],
-  "minBudgetBand": "10k-50k",
-  "focus": "ai-implementation"
+  "_comment": "PRD v8 Section 5, ICP profiles: first-class, configurable, never hardcoded. Preloaded with the four AltoLumo profiles plus Project & Program Leadership (a real AltoLumo service line the PRD only used as a hypothetical pivot example; added per operator direction to match altolumo.com). AI Engagement is NOT its own profile -- PRD v8 names it a cross-cutting multiplier every profile can carry, so it's a flag, not a sixth competing profile. scoringWeights mirror qualify.config.json's global weights uniformly; sourceWeights vary per profile based on PRD v8 Section 5 / Section 9's 'where the engine looks' guidance. admissionThreshold defaults to a conservative 60 (Grade B) per PRD v8 Section 18's open-question default -- retune per profile once Phase 2 measures real admit rates.",
+  "profiles": [
+    {
+      "id": "founder-advisory",
+      "tenantId": "altolumo",
+      "name": "Founder Advisory",
+      "offer": "Founder Advisory -- 4-6 hrs/mo",
+      "aiEngagement": true,
+      "preloaded": true,
+      "firmographics": {
+        "stage": ["pre-seed", "seed"],
+        "employeeRange": [1, 15]
+      },
+      "buyerTitles": ["Founder", "Co-founder", "CEO"],
+      "triggers": ["recent-founding", "pre-seed-or-seed-raise", "first-engineering-hire", "public-building-posts"],
+      "sourceWeights": {
+        "claude-web": 0.4,
+        "serp": 0.3,
+        "google-places": 0.1,
+        "job-postings": 0.2
+      },
+      "admissionThreshold": 60
+    },
+    {
+      "id": "embedded-executive",
+      "tenantId": "altolumo",
+      "name": "Embedded Executive",
+      "offer": "Embedded Executive -- 1 day/wk",
+      "aiEngagement": true,
+      "preloaded": true,
+      "primary": true,
+      "firmographics": {
+        "stage": ["seed", "series-a"],
+        "employeeRange": [10, 100]
+      },
+      "buyerTitles": ["CEO", "Founder", "COO"],
+      "triggers": ["recent-funding", "open-leadership-role", "growing-headcount", "active-advertising"],
+      "sourceWeights": {
+        "job-postings": 0.4,
+        "serp": 0.3,
+        "claude-web": 0.2,
+        "meta-ad-library": 0.1
+      },
+      "admissionThreshold": 60
+    },
+    {
+      "id": "growth-operator",
+      "tenantId": "altolumo",
+      "name": "Growth Operator",
+      "offer": "Growth Operator -- 2 days/wk",
+      "aiEngagement": true,
+      "preloaded": true,
+      "firmographics": {
+        "stage": ["series-a", "series-b-plus"],
+        "employeeRange": [50, 500]
+      },
+      "buyerTitles": ["CEO", "COO", "CTO", "VP Product", "VP Engineering"],
+      "triggers": ["series-a-or-later-funding", "headcount-growth", "several-open-roles", "ad-spend"],
+      "sourceWeights": {
+        "serp": 0.35,
+        "job-postings": 0.35,
+        "meta-ad-library": 0.15,
+        "google-ads-transparency": 0.15
+      },
+      "admissionThreshold": 60
+    },
+    {
+      "id": "transformation-sprint",
+      "tenantId": "altolumo",
+      "name": "Transformation Sprint",
+      "offer": "Transformation Sprint -- time & materials",
+      "aiEngagement": true,
+      "preloaded": true,
+      "firmographics": {
+        "stage": ["any"],
+        "employeeRange": [1, 5000]
+      },
+      "buyerTitles": ["Founder", "CEO", "COO", "Operations Lead", "Owner"],
+      "triggers": ["contractor-or-agency-hiring", "ad-spend", "public-project-intent", "visible-tech-gaps"],
+      "sourceWeights": {
+        "google-places": 0.4,
+        "job-postings": 0.3,
+        "claude-web": 0.2,
+        "meta-ad-library": 0.1
+      },
+      "admissionThreshold": 60
+    },
+    {
+      "id": "project-program-leadership",
+      "tenantId": "altolumo",
+      "name": "Project & Program Leadership",
+      "offer": "Fractional PM/PMO -- project & program management",
+      "aiEngagement": true,
+      "preloaded": true,
+      "firmographics": {
+        "stage": ["seed", "series-a", "series-b-plus"],
+        "employeeRange": [10, 500]
+      },
+      "buyerTitles": ["Founder", "Head of Operations", "Engineering Lead"],
+      "triggers": ["hiring-a-pm-or-program-manager", "coordinating-multiple-vendors", "stalled-or-complex-delivery"],
+      "sourceWeights": {
+        "job-postings": 0.5,
+        "serp": 0.25,
+        "claude-web": 0.15,
+        "google-places": 0.1
+      },
+      "admissionThreshold": 60
+    }
+  ]
 }
