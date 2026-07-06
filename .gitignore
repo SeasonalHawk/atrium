@@ -17,6 +17,8 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+.venv*/
+.pytest_cache/
 
 # Crew workspace output (generated artifacts, not source)
 workspace/

@@ -82,8 +82,10 @@ scoring legend, all against mock data.
 
 Next.js 15 (App Router, TypeScript strict), React 19, Tailwind CSS 3,
 Supabase Postgres, Cal.com, Resend, a Node 22 local launcher, and a Claude
-Code crew (Python: reportlab, beautifulsoup4, requests). Package management
-is pnpm for JavaScript and pip for the crew scripts.
+Code crew (Python: reportlab, beautifulsoup4, requests). A separate Lead
+Engine (Python: requests, pyyaml, pytest) sources, enriches, and verifies
+leads against Google Places, Serper, Hunter, and ZeroBounce. Package
+management is pnpm for JavaScript and pip for the crew and engine scripts.
 
 ## Project structure
 
@@ -93,6 +95,7 @@ atrium/
   console/   operator console (local)
   launcher/  Node helper bridging the console to Claude Code
   crew/      orchestrator, skills, agents, scripts, templates, config
+  engine/    Lead Engine — sourcing, enrichment, verification (Python)
   docs/      PRD and supporting decks
 ```
 
@@ -101,12 +104,19 @@ for the complete product specification.
 
 ## Status
 
-Phase 1 (Local MVP Crew), Sprint 1 of 14 complete on `dev`: the orchestrator,
-13 sub-skills, and 5 agents are adapted from the reference crew (real
-content, not stubs) and verified end-to-end — a live `/atrium prospect` run
-against a real company produced a composite score computed from
-`crew/config/qualify.config.json`'s weights. `docs/Atrium-System-PRD-v8.docx`
-consolidates and supersedes v5, adding a Lead Engine, an MCP automation
-layer, a review-before-send queue, and configurable multi-profile ICP
-targeting. See [`ROADMAP.md`](ROADMAP.md) for the current five-phase,
-sprint-by-sprint build plan.
+**Phase 1 (Local MVP Crew): complete.** The orchestrator, 13 sub-skills,
+and 5 agents are adapted from the reference crew (real content, not stubs)
+and verified end-to-end — `/atrium prospect` and `/atrium qualify` both
+produce real composite scores from `crew/config/qualify.config.json`'s
+weights against real companies.
+
+**Phase 2 (Lead Engine + Shared Pipeline): in progress.** `engine/` sources,
+enriches, and verifies leads behind swappable provider interfaces (Google
+Places, Serper, Hunter, ZeroBounce), with 44 passing unit tests. Scoring,
+the admission gate, Supabase persistence, and the console board are next.
+
+`docs/Atrium-System-PRD-v8.docx` consolidates and supersedes v5, adding the
+Lead Engine, an MCP automation layer, a review-before-send queue, and
+configurable multi-profile ICP targeting. See [`ROADMAP.md`](ROADMAP.md)
+for the current five-phase, sprint-by-sprint build plan (3 of 14 sprints
+done).

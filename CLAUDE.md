@@ -13,10 +13,11 @@ land in one pipeline worked by the same crew inside Claude Code.
 Owner: Kenneth Benavides, personally. Not an Irongrove project — copyright
 lines use "Copyright © 2026 Kenneth Benavides. All rights reserved."
 
-Current stage: Phase 1 (Local MVP Crew) complete, 2 of 14 sprints done —
-the crew is installed, adapted, and verified end-to-end (`/atrium prospect`
-and `/atrium qualify` both produce real scores from real config weights).
-Phase 2 (Lead Engine + Shared Pipeline) is in progress. Source of truth for
+Current stage: Phase 1 (Local MVP Crew) complete. Phase 2 (Lead Engine +
+Shared Pipeline) in progress, 3 of 14 sprints done overall — `engine/`
+exists with real sourcing/enrichment/verification providers behind
+`SourcingProvider`/`EnrichmentProvider`/`VerificationProvider` interfaces
+(44 passing pytest tests, all external calls mocked). Source of truth for
 product decisions:
 `docs/Atrium-System-PRD-v8.docx` — v8 consolidates and supersedes v5,
 adding the Lead Engine, MCP automation layer, review-before-send queue, and
@@ -60,11 +61,20 @@ conversation's own process.
 - Crew commands run inside Claude Code as `/atrium <command>` once installed.
   The orchestrator and all 5 agents are real, adapted content (not stubs) as
   of Sprint 1 — see `crew/atrium/SKILL.md`.
+- `python3 -m venv .venv && source .venv/bin/activate && pip install -r engine/requirements.txt`
+  — set up the Lead Engine's Python environment (separate from the crew's).
+- `python3 engine/main.py --profile <id> --sources list-import` — run the
+  engine without needing any API key (list-import only). Drop `--sources`
+  to run all enabled providers once their keys are in `.env.local`.
+- `python3 -m pytest engine/tests/ -v` — engine unit tests (44 as of Sprint
+  3), all HTTP/subprocess calls mocked, no live credentials needed.
 
 Key directories: `web/` (public funnel, Vercel), `console/` (operator
 console, local), `launcher/` (Node helper bridging console to Claude Code),
 `crew/` (orchestrator, skills, agents, scripts, templates, config — installed
-to the Claude config dir, not run from here directly).
+to the Claude config dir, not run from here directly), `engine/` (Lead
+Engine — sourcing, enrichment, verification behind swappable interfaces;
+see `engine/README.md`).
 
 ## Git
 

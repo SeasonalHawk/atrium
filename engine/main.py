@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+"""
+Lead Engine — Atrium addition (adapted concept from 28AXE/lead-engine,
+PRD v8 Section 9). Sprint 3 scope: sourcing -> enrichment -> verification.
+Scoring, the admission gate, dedup, and Supabase/workspace output land in
+Sprint 4 -- this entry point deliberately stops short of them.
+
+Usage:
+    python3 engine/main.py --profile embedded-executive --limit 10
+    python3 engine/main.py --profile embedded-executive --sources list-import
+"""
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from src.core.base import ConfigurationError
+from src.core.config_loader import get_icp_profile, is_enabled, load_sources_config
+from src.enrichment.contact_finder import ContactFinderEnrichment
+from src.sourcing.google_places import GooglePlacesSource
+from src.sourcing.list_import import ListImportSource
+from src.sourcing.serp import SerpSource
+from src.verification.email_verifier import EmailVerifier
+
+SOURCING_PROVIDERS = {
+    "google-places": GooglePlacesSource,
+    "serp": SerpSource,
+    "list-import": ListImportSource,
+}
+
+
+def build_sourcing_providers(config: dict, only: list = None):
+    providers = []
+    for source_name, provider_cls in SOURCING_PROVIDERS.items():
+        if only and source_name not in only:
+            continue
+        if not is_enabled("sourcing", source_name, config):
+            continue
+        try:
+            providers.append(provider_cls())
+        except ConfigurationError as exc:
+            print(f"Skipping {source_name}: {exc}", file=sys.stderr)
+    return providers
+
+
+def run(profile_id: str, limit: int, only_sources: list = None):
+    profile = get_icp_profile(profile_id)
+    config = load_sources_config()
+
+    candidates = []
+    for provider in build_sourcing_providers(config, only_sources):
+        try:
+            found = provider.discover(profile, limit=limit)
+            print(f"{provider.name}: found {len(found)} candidate(s)", file=sys.stderr)
+            candidates.extend(found)
+        except Exception as exc:
+            print(f"{provider.name}: sourcing failed - {exc}", file=sys.stderr)
+
+    if is_enabled("enrichment", "contact-finder", config):
+        try:
+            enricher = ContactFinderEnrichment()
+            candidates = [enricher.enrich(c) for c in candidates]
+        except ConfigurationError as exc:
+            print(f"Skipping contact-finder enrichment: {exc}", file=sys.stderr)
+
+    if is_enabled("verification", "email-verifier", config):
+        try:
+            verifier = EmailVerifier()
+            for c in candidates:
+                if c.contact_email:
+                    result = verifier.verify(c.contact_email)
+                    c.email_status = result.status
+        except ConfigurationError as exc:
+            print(f"Skipping email verification: {exc}", file=sys.stderr)
+
+    return candidates
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Lead Engine — sourcing, enrichment, verification (Sprint 3 scope).")
+    parser.add_argument("--profile", required=True, help="ICP profile id from crew/config/icp.config.json")
+    parser.add_argument("--limit", type=int, default=20, help="Max candidates per source (default: 20)")
+    parser.add_argument("--sources", help="Comma-separated source names to run (default: all enabled)")
+    args = parser.parse_args()
+
+    only = args.sources.split(",") if args.sources else None
+    candidates = run(args.profile, args.limit, only)
+
+    print(json.dumps([c.__dict__ for c in candidates], indent=2, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    main()

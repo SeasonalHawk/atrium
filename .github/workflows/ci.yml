@@ -1,6 +1,7 @@
-# PRD v5 Section 14: minimal CI. Lint + build for the funnel and console on
-# every push. Does not deploy — the funnel deploys to Vercel separately, the
-# console/launcher/crew run on the operator workstation.
+# PRD v5 Section 14 + Sprint 3: lint + build for the funnel and console,
+# plus the Lead Engine's unit tests, on every push. Does not deploy — the
+# funnel deploys to Vercel separately, the console/launcher/crew/engine run
+# on the operator workstation.
 name: ci
 on: [push]
 jobs:
@@ -15,3 +16,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm build
+
+  engine-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r engine/requirements.txt
+      - run: python3 -m pytest engine/tests/ -v
+        working-directory: engine

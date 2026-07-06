@@ -106,12 +106,26 @@ stop sourcing by hand.
 
 **Claude Code hours: 33 · Solo dev hours: 98**
 
-### Sprint 3 — Sourcing and enrichment (12 CC hrs)
+### Sprint 3 — Sourcing and enrichment (12 CC hrs) ✅ Done
 
 - Scaffold the engine, config loader, base stage interfaces (3 hrs).
 - Build Google Places + SERP + Claude web discovery (4 hrs).
 - Build contact and email finding (3 hrs).
-- Build email verification and the valid/risky/invalid gate (2 hrs).
+- Build email verification and the valid/risky/invalid gate (2 hrs) — note:
+  the admission *gate* itself (valid/risky/invalid routing logic) is Sprint
+  4's "first-pass scoring, admission gate, and dedup" task; Sprint 3 ships
+  the classifier the gate will consume.
+
+**Verified:** `engine/` scaffolded with base interfaces (`SourcingProvider`,
+`EnrichmentProvider`, `VerificationProvider`), 4 sourcing providers (Google
+Places, SERP, list-import, Claude-web), contact-finding enrichment (Hunter),
+and email verification (ZeroBounce). 44 pytest unit tests, all HTTP/subprocess
+calls mocked — no live API keys needed to run the suite. Ran the real CLI
+end-to-end via `list-import` (no key required for that source) against a
+real target. See `engine/README.md`. Found and fixed a real TLS-verification
+security bug while adapting `analyze_prospect.py` in Sprint 2 — same
+adapt-with-scrutiny discipline applied here; no equivalent issue found in
+the new engine code.
 
 ### Sprint 4 — Scoring, admission, persistence (9 CC hrs)
 
