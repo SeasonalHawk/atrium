@@ -1,7 +1,8 @@
-# PRD v5 Section 14 + Sprint 3: lint + build for the funnel and console,
-# plus the Lead Engine's unit tests, on every push. Does not deploy — the
-# funnel deploys to Vercel separately, the console/launcher/crew/engine run
-# on the operator workstation.
+# PRD v5 Section 14 + Sprints 3-4: lint + build for the funnel and console,
+# the Lead Engine's pytest suite, and the crew's Supabase bridge script
+# tests, on every push. Does not deploy — the funnel deploys to Vercel
+# separately, the console/launcher/crew/engine run on the operator
+# workstation.
 name: ci
 on: [push]
 jobs:
@@ -26,3 +27,11 @@ jobs:
       - run: pip install -r engine/requirements.txt
       - run: python3 -m pytest engine/tests/ -v
         working-directory: engine
+
+  crew-script-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node --test crew/scripts/*.test.mjs

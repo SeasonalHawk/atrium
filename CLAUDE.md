@@ -14,10 +14,12 @@ Owner: Kenneth Benavides, personally. Not an Irongrove project — copyright
 lines use "Copyright © 2026 Kenneth Benavides. All rights reserved."
 
 Current stage: Phase 1 (Local MVP Crew) complete. Phase 2 (Lead Engine +
-Shared Pipeline) in progress, 3 of 14 sprints done overall — `engine/`
-exists with real sourcing/enrichment/verification providers behind
-`SourcingProvider`/`EnrichmentProvider`/`VerificationProvider` interfaces
-(44 passing pytest tests, all external calls mocked). Source of truth for
+Shared Pipeline) in progress, 4 of 14 sprints done overall — `engine/` runs
+the full six-stage pipeline (source → enrich → verify → dedup → score →
+admit), `supabase/schema.sql` defines the shared tables, and
+`crew/scripts/push_status.mjs`/`fetch_leads.mjs` bridge the crew to
+Supabase for real. 70 pytest tests (`engine/`) + 15 Node test-runner tests
+(`crew/scripts/*.test.mjs`), all external calls mocked. Source of truth for
 product decisions:
 `docs/Atrium-System-PRD-v8.docx` — v8 consolidates and supersedes v5,
 adding the Lead Engine, MCP automation layer, review-before-send queue, and
@@ -66,15 +68,21 @@ conversation's own process.
 - `python3 engine/main.py --profile <id> --sources list-import` — run the
   engine without needing any API key (list-import only). Drop `--sources`
   to run all enabled providers once their keys are in `.env.local`.
-- `python3 -m pytest engine/tests/ -v` — engine unit tests (44 as of Sprint
-  3), all HTTP/subprocess calls mocked, no live credentials needed.
+- `python3 -m pytest engine/tests/ -v` — engine unit tests (70 as of Sprint
+  4), all HTTP/subprocess calls mocked, no live credentials needed.
+- `node --test crew/scripts/*.test.mjs` — bridge script tests (15 as of
+  Sprint 4: `push_status.mjs`, `fetch_leads.mjs`), Supabase calls mocked.
+- `psql < supabase/schema.sql` (or paste into the Supabase SQL Editor) —
+  create the `leads`/`lead_signals`/`artifacts`/`runs`/`icp_profiles`/
+  `campaigns` tables. No Supabase project is linked yet as of Sprint 4.
 
 Key directories: `web/` (public funnel, Vercel), `console/` (operator
 console, local), `launcher/` (Node helper bridging console to Claude Code),
 `crew/` (orchestrator, skills, agents, scripts, templates, config — installed
 to the Claude config dir, not run from here directly), `engine/` (Lead
-Engine — sourcing, enrichment, verification behind swappable interfaces;
-see `engine/README.md`).
+Engine — sourcing, enrichment, verification, dedup, scoring, admission,
+Supabase output behind swappable interfaces; see `engine/README.md`),
+`supabase/` (shared schema — `schema.sql`).
 
 ## Git
 
